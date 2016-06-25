@@ -73,6 +73,7 @@ com.logicpartners.labelDesigner = function(canvasid, labelWidth, labelHeight) {
 	this.labelHeight = labelHeight * this.dpi;
 	this.propertyInspector = new com.logicpartners.propertyInspector(this, this.canvas);
 	this.toolbar = new com.logicpartners.toolsWindow(this, this.canvas);
+	this.labelSizeInspector = new com.logicpartners.labelSizeInspector(this, this.canvas);
 	this.labelInspector = new com.logicpartners.labelInspector(this, this.canvas);
 	this.dpi = 200;
 
@@ -102,8 +103,8 @@ com.logicpartners.labelDesigner = function(canvasid, labelWidth, labelHeight) {
 		this.canvasElement.prop("width", this.labelWidth + 10).prop("height", this.labelHeight + 10);
 		this.labelX = this.canvas.width / 2 - this.labelWidth / 2;
 		this.labelY = 5;
-		console.log(xchange);
 		this.propertyInspector.updatePosition(xchange);
+		this.labelSizeInspector.updatePosition(xchange);
 		this.labelInspector.updatePosition(xchange);
 		this.updateCanvas();
 	}
@@ -179,7 +180,7 @@ com.logicpartners.labelDesigner = function(canvasid, labelWidth, labelHeight) {
 						case 2:
 							style = "n-resize";
 							break;
-						case 3:
+						case 3:	
 							style = "ne-resize";
 							break;
 						case 4:
@@ -229,12 +230,6 @@ com.logicpartners.labelDesigner = function(canvasid, labelWidth, labelHeight) {
 					case 46:
 						if (self.activeElement) {
 							self.deleteActiveElement();
-							handled = true;
-						}
-						break;
-					case 80:
-						if (event.ctrlKey) {
-							self.generateZPL();
 							handled = true;
 						}
 						break;
@@ -293,6 +288,8 @@ com.logicpartners.labelDesigner = function(canvasid, labelWidth, labelHeight) {
 
 	this.getHandle = function(coords) {
 		var result = 0;
+
+		if(this.activeElement.canResize !== true) return result;
 
 		var leftEdge = coords.x > this.activeElement.x - 5 && coords.x < this.activeElement.x + 5;
 		var rightEdge = coords.x > this.activeElement.x + this.activeElement.getWidth() - 5 && coords.x < this.activeElement.x + this.activeElement.getWidth() + 5;
@@ -436,6 +433,7 @@ com.logicpartners.labelDesigner = function(canvasid, labelWidth, labelHeight) {
 
 	this.update = function() {
 		this.propertyInspector.update(this.activeElement);
+		this.labelInspector.update(this.activeElement);
 	}
 
 	this.updateCanvas = function() {
@@ -470,31 +468,6 @@ com.logicpartners.labelDesigner = function(canvasid, labelWidth, labelHeight) {
 		this.drawingContext.lineWidth = 2;
 		if (this.activeElement)
 			this.activeElement.drawActive(this.drawingContext);
-	}
-	
-	this.generateZPL = function() {
-		var data = "^XA\r\n" +
-				   "^CFd0,10,18\r\n" +
-				   "^PR12\r\n" +
-				   "^LRY\r\n" +
-				   "^MD30\r\n" +
-				   "^PW" + this.labelWidth + "\r\n" +
-				   "^LL" + this.labelHeight + "\r\n" +
-				   "^PON\r\n";
-	    var bufferData = "";
-		
-		for (var i = 0; i < this.currentLayer; i++) {
-			if (this.elements[i]) {
-				bufferData += this.elements[i].getZPLData();
-				data += this.elements[i].toZPL(this.labelX, this.labelY, this.labelHeight, this.labelWidth);
-			}
-		}
-		
-		data += "^PQ1\r\n" +
-				"^XZ\r\n";
-				
-		console.log(bufferData + data);
-		return { "data" : bufferData, "zpl" : data };
 	}
 	
 	this.setNewObject = function(controller) {

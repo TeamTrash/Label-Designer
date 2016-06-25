@@ -4,12 +4,12 @@ if (!com.logicpartners)
 	com.logicpartners = {};
 if (!com.logicpartners.designerTools)
 	com.logicpartners.designerTools = {};
-	
-com.logicpartners.designerTools.text = function() {
+
+com.logicpartners.designerTools.text = function () {
 	var self = this;
 	this.counter = 1;
 	this.button = $("<div></div>").addClass("designerToolbarText designerToolbarButton").attr("title", "Text").append($("<div></div>"));
-	this.object =  function(x, y, width, height) {
+	this.object = function (x, y, width, height) {
 		this.name = "Textbox " + self.counter++;
 		this.text = this.name;
 		this.x = x;
@@ -18,30 +18,49 @@ com.logicpartners.designerTools.text = function() {
 		this.fontType = "Arial";
 		this.width = 100;
 		this.height = 0;
-		
-		this.readonly = [ "width", "height" ];
-		
-		this.getFontHeight = function() {
+		this.rotation = 0;
+		this.canResize = false;
+
+		this.properties = [
+			{
+				name: "name", text: "name", readonly: false, type: "text" 
+				, get: function(obj){return obj.name;}, set: function (obj, value) {obj.name = value;}
+			},
+			{
+				name: "text", text: "text", readonly: false, type: "text"
+				, get: function (obj) { return obj.text; }, set: function (obj, value) { obj.text = value }
+			},
+			{
+				name: "x", text: "x", readonly: false, type: "number"
+				, get: function (obj) { return obj.x; }, set: function (obj, value) { obj.x = value }
+			},
+			{
+				name: "y", text: "y", readonly: false, type: "number"
+				, get: function (obj) { return obj.y; }, set: function (obj, value) { obj.y = value }
+			},
+			{
+				name: "fontSize", text: "font size", readonly: false, type: "options", options: [10,20,30,40,50,60]
+				, get: function (obj) { return obj.fontSize; }, set: function (obj, value) { obj.fontSize = value }
+			},
+			{
+				name: "rotation", text: "rotation", readonly: false, type: "options", options: [0,90,180,270]
+				, get: function (obj) { return obj.rotation; }, set: function (obj, value) { obj.rotation = value;  }
+			}			
+		];
+
+		this.getFontHeight = function () {
 			var textMeasure = $("<div></div>").css({
-				"font-size" : this.fontSize + "px",
-				"font-family" : this.fontType,
-				"opacity" : 0,
+				"font-size": this.fontSize + "px",
+				"font-family": this.fontType,
+				"opacity": 0,
 			}).text("M").appendTo($("body"));
-			
+
 			var height = textMeasure.outerHeight();
 			textMeasure.remove();
 			return height;
 		}
-		
-		this.getZPLData = function() {
-			return "";
-		}
 
-		this.toZPL = function(labelx, labely, labelwidth, labelheight) {
-			return "^FO" + (this.x - labelx) + "," + (this.y - labely) + "^FD" + this.text + "^FS";
-		}
-		
-		this.draw = function(context) {
+		this.draw = function (context) {
 			context.font = this.fontSize + "px " + this.fontType;
 			var oColor = context.fillStyle;
 			context.fillStyle = "white";
@@ -49,42 +68,65 @@ com.logicpartners.designerTools.text = function() {
 			var measuredText = context.measureText(this.text);
 			this.width = measuredText.width;
 			context.globalCompositeOperation = "difference";
-			context.fillText(this.text, this.x, this.y + (this.height * 0.75));
+			context.save();
+			context.translate(parseInt(this.x), parseInt(this.y) + (this.height / 2));
+			context.rotate((this.rotation * Math.PI) / 180);
+			context.fillText(this.text, 0, 0 + (this.height * 0.75) - (this.height / 2));
+			context.restore();
 			context.globalCompositeOperation = "source-over";
 			context.fillStyle = oColor;
-			//context.fillRect(this.x, this.y, this.width, this.height);
 		}
-		
-		this.setWidth = function(width) {
+
+		this.setWidth = function (width) {
 			//this.width = width;
 		}
-		
-		this.getWidth = function() {
+
+		this.getWidth = function () {
 			return this.width;
 		}
-		
-		this.setHeight = function(height) {
+
+		this.setHeight = function (height) {
 			//height = height;
 		}
-		
-		this.getHeight = function() {
+
+		this.getHeight = function () {
 			return this.height * 0.75;
 		}
 
-		this.setHandle = function(coords) {
-			this.handle = this.resizeZone(coords);
+		this.setRotation = function (angle) {
+			this.rotation = angle;
 		}
 
-		this.getHandle = function() {
-			return this.handle;
+		this.getRotation = function () {
+			return this.rotation;
 		}
 
-		this.drawActive = function(context) {
-			context.dashedStroke(parseInt(this.x + 1), parseInt(this.y + 1), parseInt(this.x) + parseInt(this.width) - 1, parseInt(this.y) + parseInt(this.height * 0.9) - 1, [2, 2]);
+		this.drawActive = function (context) {
+			context.save();
+
+			context.translate(parseInt(this.x), parseInt(this.y) + this.height / 2);
+			context.rotate((this.rotation * Math.PI) / 180);
+
+			context.dashedStroke(1, 1 - (this.height / 2), parseInt(this.width) - 1, parseInt(this.height * 0.9) - (this.height / 2) - 1, [2, 2]);
+
+			context.restore();
 		}
 
-		this.hitTest = function(coords) {
-			return (coords.x >= parseInt(this.x) && coords.x <= parseInt(this.x) + parseInt(this.width) && coords.y >= parseInt(this.y) && coords.y <= parseInt(this.y) + parseInt(this.height) * 0.75);
+		this.hitTest = function (coords) {
+			var helper = new com.logicpartners.labelControl.helper();
+			var originX = parseInt(this.x);
+			var originY = parseInt(this.y) + this.height / 2;
+
+			rotation = this.rotation;
+
+			var rotatedTopLeft = helper.rotate(originX, originY, this.x, this.y, rotation);
+			var rotatedBottomLeft = helper.rotate(originX, originY, this.x, this.y + this.height, rotation);
+			var rotatedTopRight = helper.rotate(originX, originY, this.x + this.width, this.y, rotation);
+			var rotatedBottomRight = helper.rotate(originX, originY, this.x + this.width, this.y + this.height, rotation);
+
+			hitTest = helper.isPointWithinPolygon(coords.x, coords.y, [rotatedTopLeft, rotatedBottomLeft, rotatedBottomRight, rotatedTopRight])
+
+			return hitTest;
 		}
 	}
 }

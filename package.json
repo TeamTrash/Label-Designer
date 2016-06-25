@@ -1,0 +1,14 @@
+{
+  "name": "label-designer",
+  "version": "0.0.1",
+  "scripts": {
+    "lite": "lite-server",
+    "start": "\"npm run lite\" "
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+    "concurrently": "^2.0.0",
+    "lite-server": "^2.2.0"
+  }
+}

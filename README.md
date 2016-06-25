@@ -1,7 +1,7 @@
-# ZPL-Label-Designer
-Javascript / Web Based designer for ZPL printers.
+# Label-Designer
+Javascript / Web Based designer for industrial printers.
 
-This is the start of a Javascript based designer for creating ZPL labels.
+This is the start of a Javascript based designer for creating labels.
 
 # DEMO
-http://teynon.github.io/ZPL-Label-Designer/index.html
+http://jlucaspains.github.io/Label-Designer/index.html

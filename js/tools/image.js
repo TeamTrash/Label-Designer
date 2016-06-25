@@ -119,86 +119,33 @@ com.logicpartners.designerTools.image = function() {
 		this.width = width;
 		this.height = height;
 		this.data = data;
+		this.rotation = 0;
+		this.canResize = true;
 		
-		this.readonly = [ "width", "height", "data" ];
-		this.hidden = [ "data", "uniqueID" ];
-		
-		this.getZPLData = function() {
-			var GRFVal = function(nibble) {
-				var nibbleMap = { 
-					"0" : "0000",
-					"1" : "0001",
-					"2" : "0010",
-					"3" : "0011",
-					"4" : "0100",
-					"5" : "0101",
-					"6" : "0110",
-					"7" : "0111",
-					"8" : "1000",
-					"9" : "1001",
-					"A" : "1010",
-					"B" : "1011",
-					"C" : "1100",
-					"D" : "1101",
-					"E" : "1110",
-					"F" : "1111",
-				};
-				
-				for (key in nibbleMap) {
-					if (nibbleMap[key] == nibble) {
-						return key;
-					}
-				}
-				
-				return "";
-			}
-			
-			var imgData = "";
-			var bytesPerLine = Math.ceil(this.width / 8);
-			console.log(bytesPerLine);
-			console.log(this.width);
-			console.log(bytesPerLine);
-			for (var y = 0; y < this.height; y++) {
-				var nibble = "";
-				var bytes = 0;
-				for (var x = 0; x < this.width; x++) {
-					var point = 4 * (this.width * y + x);
-					if (this.data[point+1] == 0) {
-						nibble += "1";
-					}
-					else nibble += "0";
-					
-					if (nibble.length > 7) {
-						imgData += GRFVal(nibble.substring(0, 4)) + GRFVal(nibble.substring(4, 8));
-						nibble = "";
-						bytes++;
-					}
-				}
-				
-				if (nibble.length > 0) {
-					while (nibble.length < 8) nibble += "0";
-					imgData += GRFVal(nibble.substring(0, 4)) + GRFVal(nibble.substring(4, 8));
-					nibble = "";
-					bytes++;
-				}
-				
-				while (bytes < bytesPerLine) {
-					imgData += GRFVal("0000") + GRFVal("0000");
-					bytes++;
-				}
-				
-				imgData += "\n";
-			}
-			
-			return "~DGIMG" + this.uniqueID + "," + bytesPerLine * height + "," + bytesPerLine + "," + imgData;
-		},
-		
-		
-		
-		this.toZPL = function(labelx, labely, labelwidth, labelheight) {
-			return "^FO" + (this.x - labelx) + "," + (this.y - labely) + "^XGR:IMG" + this.uniqueID + ",1,1^FS";
-		},
+		this.properties = [
+			{
+				name: "name", text: "name", readonly: false, type:"text"
+				, get: function(obj){return obj.name;}, set: function (obj, value) {obj.name = value;}
+			},
+			{
+				name: "x", text: "x", readonly: false, type:"number"
+				, get: function (obj) { return obj.x; }, set: function (obj, value) { obj.x = value }
+			},
+			{
+				name: "y", text: "y", readonly: false, type:"number"
+				, get: function (obj) { return obj.y; }, set: function (obj, value) { obj.y = value }
+			},
+			{
+				name: "width", text: "width", readonly: true, type:"text"
+				, get: function (obj) { return obj.width; }, set: function (obj, value) { obj.width = value;  }
+			},
+			{
+				name: "height", text: "height", readonly: true, type:"text"
+				, get: function (obj) { return obj.height; }, set: function (obj, value) { obj.height = value;  }
+			}		
+		];
 
+		
 		this.draw = function(context, width, height) {
 			var ctxData = context.getImageData(0, 0, width, height);
 			for (var y = 0; y < this.height; y++) {
@@ -240,6 +187,14 @@ com.logicpartners.designerTools.image = function() {
 
 		this.getHandle = function() {
 			return this.handle;
+		}
+
+		this.setRotation = function(angle) {
+			this.rotation = angle;
+		}
+
+		this.getRotation = function() {
+			return this.rotation;
 		}
 
 		this.drawActive = function(context) {

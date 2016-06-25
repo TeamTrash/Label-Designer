@@ -9,9 +9,10 @@
         <script language="javascript" type="text/javascript" src="js/designer.js"></script>
         <script language="javascript" type="text/javascript" src="js/designer_propertyInspector.js"></script>
         <script language="javascript" type="text/javascript" src="js/designer_toolbar.js"></script>
+        <script language="javascript" type="text/javascript" src="js/designer_labelSizeInspector.js"></script>
         <script language="javascript" type="text/javascript" src="js/designer_labelInspector.js"></script>
         <script language="javascript" type="text/javascript" src="js/labelControls/LabelSize.js"></script>
-        <script language="javascript" type="text/javascript" src="js/labelControls/GenerateZPL.js"></script>
+        <script language="javascript" type="text/javascript" src="js/labelControls/helper.js"></script>
         <script language="javascript" type="text/javascript" src="js/lindell-barcode/JsBarcode.all.min.js"></script>
         <script language="javascript" type="text/javascript" src="js/tools/rectangle.js"></script>
         <script language="javascript" type="text/javascript" src="js/tools/barcode.js"></script>
@@ -20,15 +21,12 @@
         <script>
 			var canvasDesigner = null;
             $(document).ready(function() {
-                canvasDesigner = new com.logicpartners.labelDesigner('labelDesigner', 1.75, 0.75);
-				canvasDesigner.labelInspector.addTool(new com.logicpartners.labelControl.size(canvasDesigner));
-				canvasDesigner.labelInspector.addTool(new com.logicpartners.labelControl.generatezpl(canvasDesigner));
+                canvasDesigner = new com.logicpartners.labelDesigner('labelDesigner', 4, 3);
+				canvasDesigner.labelSizeInspector.addTool(new com.logicpartners.labelControl.size(canvasDesigner));
 				canvasDesigner.toolbar.addTool(new com.logicpartners.designerTools.text());
 				canvasDesigner.toolbar.addTool(new com.logicpartners.designerTools.rectangle());
 				canvasDesigner.toolbar.addTool(new com.logicpartners.designerTools.barcode());
 				canvasDesigner.toolbar.addTool(new com.logicpartners.designerTools.image());
-                //canvasDesigner.addRectangle(50, 50, 300, 50);
-                //canvasDesigner.addRectangle(100, 100, 50, 50);
             });
         </script>
     </head>

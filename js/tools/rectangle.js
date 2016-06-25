@@ -13,21 +13,34 @@ com.logicpartners.designerTools.rectangle = function() {
 		this.name = "Rectangle " + self.counter++;
 		this.x = x;
 		this.y = y;
-		this.width = width;
-		this.height = height;
-		
-		this.getZPLData = function() {
-			return "";
-		}
+		this.width = width > 30 ? width : 30;
+		this.height = height > 30 ? height : 30;
+		this.rotation = 0;
+		this.canResize = true;
 
-		this.toZPL = function(labelx, labely, labelwidth, labelheight) {
-			if (this.width > this.height) {
-				return "^FO" + (this.x - labelx) + "," + (this.y - labely) + "^GB" + this.width + ",0," + this.height + "^FS";
-			}
-			
-			return "^FO" + (this.x - labelx) + "," + (this.y - labely) + "^GB" + "0," + this.height + "," + this.width + "^FS";
-		}
-		
+		this.properties = [
+			{
+				name: "name", text: "name", readonly: false, type:"text"
+				, get: function(obj){return obj.name;}, set: function (obj, value) {obj.name = value;}
+			},
+			{
+				name: "x", text: "x", readonly: false, type:"number"
+				, get: function (obj) { return obj.x; }, set: function (obj, value) { obj.x = value }
+			},
+			{
+				name: "y", text: "y", readonly: false, type:"number"
+				, get: function (obj) { return obj.y; }, set: function (obj, value) { obj.y = value }
+			},
+			{
+				name: "width", text: "width", readonly: false, type:"text"
+				, get: function (obj) { return obj.width; }, set: function (obj, value) { obj.width = value;  }
+			},
+			{
+				name: "height", text: "height", readonly: false, type:"text"
+				, get: function (obj) { return obj.height; }, set: function (obj, value) { obj.height = value;  }
+			}		
+		];
+
 		this.draw = function(context) {
 			context.fillRect(this.x, this.y, this.width, this.height);
 		}
@@ -54,6 +67,14 @@ com.logicpartners.designerTools.rectangle = function() {
 
 		this.getHandle = function() {
 			return this.handle;
+		}
+
+		this.setRotation = function(angle) {
+			this.rotation = angle;
+		}
+
+		this.getRotation = function() {
+			return this.rotation;
 		}
 
 		this.drawActive = function(context) {
