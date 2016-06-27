@@ -14,7 +14,7 @@ com.logicpartners.designerTools.text = function () {
 		this.text = this.name;
 		this.x = x;
 		this.y = y;
-		this.fontSize = 36;
+		this.fontSize = 30;
 		this.fontType = "Arial";
 		this.width = 100;
 		this.height = 0;
@@ -113,18 +113,17 @@ com.logicpartners.designerTools.text = function () {
 		}
 
 		this.hitTest = function (coords) {
-			var helper = new com.logicpartners.labelControl.helper();
 			var originX = parseInt(this.x);
 			var originY = parseInt(this.y) + this.height / 2;
 
 			rotation = this.rotation;
 
-			var rotatedTopLeft = helper.rotate(originX, originY, this.x, this.y, rotation);
-			var rotatedBottomLeft = helper.rotate(originX, originY, this.x, this.y + this.height, rotation);
-			var rotatedTopRight = helper.rotate(originX, originY, this.x + this.width, this.y, rotation);
-			var rotatedBottomRight = helper.rotate(originX, originY, this.x + this.width, this.y + this.height, rotation);
-
-			hitTest = helper.isPointWithinPolygon(coords.x, coords.y, [rotatedTopLeft, rotatedBottomLeft, rotatedBottomRight, rotatedTopRight])
+			var rotatedTopLeft = bo.helpers.mathHelper.rotate(new bo.helpers.point(originX, originY), new bo.helpers.point(this.x, this.y), rotation);
+			var rotatedBottomLeft = bo.helpers.mathHelper.rotate(new bo.helpers.point(originX, originY), new bo.helpers.point(this.x, this.y + this.height), rotation);
+			var rotatedTopRight = bo.helpers.mathHelper.rotate(new bo.helpers.point(originX, originY), new bo.helpers.point(this.x + this.width, this.y), rotation);
+			var rotatedBottomRight = bo.helpers.mathHelper.rotate(new bo.helpers.point(originX, originY), new bo.helpers.point(this.x + this.width, this.y + this.height), rotation);
+			var area = [rotatedTopLeft, rotatedBottomLeft, rotatedBottomRight, rotatedTopRight]
+			hitTest = bo.helpers.mathHelper.isPointWithinPolygon(new bo.helpers.point(coords.x, coords.y), area)
 
 			return hitTest;
 		}

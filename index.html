@@ -22,7 +22,7 @@
 			var canvasDesigner = null;
             $(document).ready(function() {
                 canvasDesigner = new com.logicpartners.labelDesigner('labelDesigner', 4, 3);
-				canvasDesigner.labelSizeInspector.addTool(new com.logicpartners.labelControl.size(canvasDesigner));
+				canvasDesigner.labelSizeInspector.addTool(new bo.helpers.sizeControl(canvasDesigner));
 				canvasDesigner.toolbar.addTool(new com.logicpartners.designerTools.text());
 				canvasDesigner.toolbar.addTool(new com.logicpartners.designerTools.rectangle());
 				canvasDesigner.toolbar.addTool(new com.logicpartners.designerTools.barcode());

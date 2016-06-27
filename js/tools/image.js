@@ -81,7 +81,7 @@ com.logicpartners.designerTools.image = function() {
 			}
 		}).appendTo(dialog);
 		var imageContainer = $("<div></div>").css({ "padding-top" : "5px" });
-		var imageLeft = $("<img />").prop("src", "blank.gif").prop("border", "none").css({ float: "left", width: 200, height: 200, border: "1px solid #DDDDDD"}).appendTo(imageContainer);
+		var imageLeft = $("<img />").prop("src", "images/blank.gif").prop("border", "none").css({ float: "left", width: 200, height: 200, border: "1px solid #DDDDDD"}).appendTo(imageContainer);
 		var imageRight = $("<canvas />").css({ float: "right", width: 200, height: 200, border: "1px solid #DDDDDD"}).appendTo(imageContainer);
 		
 		imageContainer.appendTo(dialog);

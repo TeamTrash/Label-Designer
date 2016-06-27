@@ -71,10 +71,10 @@ com.logicpartners.labelDesigner = function(canvasid, labelWidth, labelHeight) {
 
 	this.labelWidth = labelWidth * this.dpi;
 	this.labelHeight = labelHeight * this.dpi;
-	this.propertyInspector = new com.logicpartners.propertyInspector(this, this.canvas);
-	this.toolbar = new com.logicpartners.toolsWindow(this, this.canvas);
-	this.labelSizeInspector = new com.logicpartners.labelSizeInspector(this, this.canvas);
-	this.labelInspector = new com.logicpartners.labelInspector(this, this.canvas);
+	this.propertyInspector = new bo.propertyInspector(this, this.canvas);
+	this.toolbar = new bo.toolsWindow(this, this.canvas);
+	this.labelSizeInspector = new bo.labelSizeInspector(this, this.canvas);
+	this.labelInspector = new bo.labelInspector(this, this.canvas);
 	this.dpi = 200;
 
 	this.drawingContext = this.canvas.getContext("2d");

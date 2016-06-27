@@ -41,4 +41,11 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# Not wanted files
 node_modules
+typings
+test/*spec.js*
+js/labelControls/*.js*
+js/tools/*.js*
+js/*.js*

@@ -85,17 +85,17 @@
 }
 
 .designerToolbarBarcode {
-	background-image: url(../toolbar_barcode.gif);
+	background-image: url(../images/toolbar_barcode.gif);
 }
 
 .designerToolbarRectangle {
-	background-image: url(../toolbar_rectangle.gif);
+	background-image: url(../images/toolbar_rectangle.gif);
 }
 
 .designerToolbarText {
-	background-image: url(../toolbar_text.gif);
+	background-image: url(../images/toolbar_text.gif);
 }
 
 .designerToolbarImage {
-	background-image: url(../toolbar_image.gif);
+	background-image: url(../images/toolbar_image.gif);
 }
