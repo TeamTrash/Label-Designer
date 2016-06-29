@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "definitely-typed-jasmine": "^1.0.0",
-    "definitely-typed-jquery": "^1.0.0"
+    "definitely-typed-jquery": "^1.0.0",
+    "jquery-modal": "^0.7.0"
   },
   "devDependencies": {
     "concurrently": "^2.0.0",
