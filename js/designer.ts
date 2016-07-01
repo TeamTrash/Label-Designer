@@ -3,6 +3,7 @@ interface HTMLCanvasElement {
 }
 interface Window {
 	CanvasRenderingContext2D: any;
+	saveAs(file: File);
 }
 interface CanvasRenderingContext2D {
 	dashedLine(x: number, y: number, x2: number, y2: number, dashArray: Array<number>);
@@ -112,18 +113,19 @@ module bo {
 		private canvas: HTMLCanvasElement;
 		private canvasElement: JQuery;
 
-		private labelWidth: number;
-		private labelHeight: number;
+		dpi: number;
+		labelWidth: number;
+		labelHeight: number;
+		elements: Array<tool>;
+		activeElement: tool;
+
 		private propertyInspector: bo.propertyInspector;
 		private toolbar: bo.toolsWindow;
 		private labelSizeInspector: bo.labelSizeInspector;
 		private labelInspector: bo.labelInspector;
-		private dpi: number;
 
 		private drawingContext: CanvasRenderingContext2D;
-		private elements: Array<tool>;
 		private currentLayer: number;
-		private activeElement: tool;
 		private activeTool: any;
 		private newObjectController: toolFactory;
 
@@ -135,7 +137,6 @@ module bo {
 		private dragElementOffset: bo.helpers.point;
 		private dragAction: number;
 		private dragging: boolean;
-
 
 		updateLabelSize(width: number, height: number): void {
 			var xchange = (width * this.dpi + 10) - parseInt(this.canvasElement.prop("width"));
@@ -155,6 +156,40 @@ module bo {
 			this.elements[this.currentLayer++] = tool;
 			this.activeElement = this.elements[this.currentLayer - 1];
 			this.updateCanvas();
+		}
+
+		reset(): void {
+			this.elements = [];
+			this.currentLayer = 1;
+			this.activeElement = null;
+			this.updateCanvas();
+		}
+
+		saveToJson(): string {
+			var elements = this.elements
+				.filter((value: bo.designerTools.tool) => { return value != null })
+				.map((value: bo.designerTools.tool) => {
+					return value != null ? value.toSerializable() : null;
+				});
+
+			var saveModel = { height: this.labelHeight, width: this.labelWidth, dpi: this.dpi, items: elements }
+
+			return JSON.stringify(saveModel);
+		}
+
+		loadFromJson(json: string): void {
+			var model = JSON.parse(json);
+			var elements = model.items.map((item: any) => {
+				return bo.designerTools.typeMapping[item.type].fromObject(item);
+			});
+
+			this.reset();
+			this.dpi = model.dpi;
+			this.updateLabelSize(model.width / model.dpi, model.height / model.dpi);
+
+			for (var element of elements) {
+				this.addObject(element);
+			}
 		}
 
 		private deleteActiveElement(): void {
@@ -348,23 +383,15 @@ module bo {
 		updateCanvas(): void {
 			this.update();
 
-			//this.drawingContext.globalCompositeOperation = "source-over";
-
 			this.drawingContext.fillStyle = "#FFFFFF";
 			this.drawingContext.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-			//this.drawingContext.fillStyle = "rgba(255, 255, 255, 0)";
-			//this.drawingContext.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
 			// Draw the boundary.
 			this.drawingContext.strokeStyle = "#FF0000";
-			this.drawingContext.lineWidth = 2;
+			this.drawingContext.lineWidth = 1;
 			this.drawingContext.strokeRect(this.labelX, this.labelY, this.labelWidth, this.labelHeight);
-
 			this.drawingContext.strokeStyle = "#000000";
 			this.drawingContext.fillStyle = "#000000";
-
-			//this.drawingContext.globalCompositeOperation = "difference";
 
 			for (var i = 0; i < this.currentLayer; i++) {
 				if (this.elements[i]) {

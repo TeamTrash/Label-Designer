@@ -1,6 +1,7 @@
 module bo.helpers {
+	
 	export class sizeControl {
-		constructor(public designer: any) {
+		constructor(public designer: labelDesigner) {
 			var self = this;
 			this.workspace = this.buildWorkspace();
 			this.widthContainer = this.buildWidthContainer();

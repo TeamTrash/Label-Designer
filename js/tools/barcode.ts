@@ -83,7 +83,7 @@ module bo.designerTools {
 		properties: any;
 		canvasHolder: any;
 
-		draw(context: any, width?: number, height?: number): void {
+		draw(context: CanvasRenderingContext2D, width?: number, height?: number): void {
 			this.canvasHolder.JsBarcode(this.text, { width: this.multiplier, height : this.height, format: this.format, displayValue:false, margin:0});
 			var cwidth = this.canvasHolder[0].width;
 			var cheight = this.canvasHolder[0].height;
@@ -98,7 +98,7 @@ module bo.designerTools {
 			context.restore();
 		}
 
-		drawActive(context: any): void {
+		drawActive(context: CanvasRenderingContext2D): void {
 			context.save();
 
 			context.translate(this.x, this.y);
@@ -123,6 +123,24 @@ module bo.designerTools {
 			var hitTest = mathHelper.isPointWithinPolygon(new point(coords.x, coords.y), area)
 
 			return hitTest;
+		}
+				
+        toSerializable(): any {
+			return {
+				type: "barcodeTool", name: this.name, text: this.text, x: this.x, y: this.y, 
+				height: this.height, format: this.format, multiplier: this.multiplier, rotation: this.rotation
+			};
+		}
+
+        static fromObject(object: any) {
+			var result = new barcodeTool(1, object.x, object.y, object.width, object.height);
+			result.name = object.name;
+			result.text = object.text;
+			result.format = object.format;
+			result.multiplier = object.multiplier;
+			result.rotation = object.rotation;
+
+			return result;
 		}
 	}
 }

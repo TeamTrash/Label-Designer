@@ -16,7 +16,9 @@ module bo.designerTools {
 
 		private internalObject(x: number, y: number, width: number, height: number, data: any): bo.designerTools.tool {
 			this.counter = this.counter || 1;
-			return new imageTool(this.counter++, x, y, width, height, data);
+			var result = new imageTool(this.counter++, x, y, width, height);
+			result.data = data;
+			return result;
 		}
 
 		activate(toolbar: any) {
@@ -115,14 +117,13 @@ module bo.designerTools {
 	}
 
 	export class imageTool implements tool {
-		constructor(counter: number, x: number, y: number, width: number, height: number, data: any) {
+		constructor(counter: number, x: number, y: number, width: number, height: number) {
 			this.uniqueID = counter;
 			this.name = "Image " + counter;
 			this.x = x;
 			this.y = y;
 			this.width = width;
-			this.height = height;
-			this.data = data;
+			this.height = height;x
 			this.rotation = 0;
 			this.canResize = true;
 
@@ -186,6 +187,21 @@ module bo.designerTools {
 
 		hitTest(coords: any) {
 			return (coords.x >= (this.x) && coords.x <= (this.x) + (this.width) && coords.y >= (this.y) && coords.y <= (this.y) + (this.height));
+		}
+		
+        toSerializable(): any {
+			return {
+				type: "imageTool", uniqueID: this.uniqueID, name: this.name, x: this.x, y: this.y, 
+				width: this.width, height: this.height, data: this.data
+			};
+		}
+
+        static fromObject(object: any) {
+			var result = new imageTool(object.uniqueID, object.x, object.y, object.width, object.height);
+			result.data = object.data;
+			result.name = object.name;
+
+			return result;
 		}
 	}
 }

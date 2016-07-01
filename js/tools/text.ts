@@ -125,5 +125,23 @@ module bo.designerTools {
 
 			return hitTest;
 		}
+
+        toSerializable(): any {
+			return {
+				type: "textTool", name: this.name, text: this.text, x: this.x, y: this.y, fontSize: this.fontSize,
+				fontType: this.fontType, width: this.width, height: this.height, rotation: this.rotation
+			};
+		}
+
+        static fromObject(object: any) {
+			var result = new textTool(1, object.x, object.y, object.width, object.height);
+			result.name = object.name;
+			result.text = object.text;
+			result.fontSize = object.fontSize;
+			result.fontType = object.fontType;
+			result.rotation = object.rotation;
+
+			return result;
+		}
 	}
 }

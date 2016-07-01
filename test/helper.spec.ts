@@ -15,10 +15,10 @@ describe("helper tests", () => {
     () => expect(bo.helpers.mathHelper.rotate(new bo.helpers.point(5, 5), new bo.helpers.point(12, 20), 270).round()).toEqual(new bo.helpers.point(20, -2))
   );
 
-  var point = new bo.helpers.point(1, 1);
-  var polygon = [new bo.helpers.point(0, 0), new bo.helpers.point(0, 15), new bo.helpers.point(15, 15)
-    , new bo.helpers.point(15, 0)];
-  it('point [1,1] is within polygon [0,0][0,15][15,15][15,0]',
+  var point = new bo.helpers.point(114, 101);
+  var polygon = [new bo.helpers.point(113, 100), new bo.helpers.point(113, 102), new bo.helpers.point(214, 102)
+    , new bo.helpers.point(214, 100)];
+  it('point [114,101] is within polygon [113,100][113,102][214,102][214,100]',
     () => expect(bo.helpers.mathHelper.isPointWithinPolygon(point, polygon)).toEqual(true)
   );
 

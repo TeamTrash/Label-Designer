@@ -69,5 +69,19 @@ module bo.designerTools {
 		hitTest(coords: point): boolean {
 			return (coords.x >= this.x && coords.x <= this.x + this.width && coords.y >= this.y && coords.y <= this.y + this.height);
 		}
+
+        toSerializable(): any {
+			return {
+				type: "rectangleTool", name: this.name, x: this.x, y: this.y, width: this.width, 
+				height: this.height
+			};
+		}
+
+        static fromObject(object: any) {
+			var result = new rectangleTool(1, object.x, object.y, object.width, object.height);
+			result.name = object.name;
+
+			return result;
+		}
 	}
 }
