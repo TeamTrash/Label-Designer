@@ -55,18 +55,12 @@ module bo {
 					"left": canvas.getBoundingClientRect().left - 90,
 					"top": canvas.getBoundingClientRect().top
 				})
-				//.draggable({handle: "div.designerPropertyTitle"})
 				.insertAfter(this.canvasElement);
 		}
 
 		private buildToolsViewContainer(toolsWindow: JQuery): JQuery {
 			return $('<div></div>')
 				.addClass("designerToolbarContent")
-				// .resizable({
-				// 	resize: function (event, ui) {
-				// 		ui.size.width = ui.originalSize.width;
-				// 	}
-				// })
 				.appendTo(toolsWindow);
 		}
 

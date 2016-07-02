@@ -88,11 +88,6 @@ module bo {
 		private buildPropertyViewContainer(propertyInspector: JQuery): JQuery {
 			return $('<div></div>')
 				.addClass("designerPropertyContainer")
-				// .resizable({
-				// 	resize: function (event, ui) {
-				// 		ui.size.width = ui.originalSize.width;
-				// 	}
-				// })
 				.appendTo(propertyInspector);
 		}
 
@@ -103,7 +98,6 @@ module bo {
 					"left": this.canvas.getBoundingClientRect().right + 5,
 					"top": this.canvas.getBoundingClientRect().top
 				})
-				//.draggable({handle: "div.designerPropertyTitle"})
 				.insertAfter(this.canvasElement);
 		}
 

@@ -27,7 +27,7 @@ module bo.designerTools {
 			this.width = 100;
 			this.height = 0;
 			this.rotation = 0;
-			this.canResize = false;
+			this.canResize = true;
 
 			this.properties = [
 				{
