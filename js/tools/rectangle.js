@@ -1,67 +1,73 @@
-if (!com)
-	var com = {};
-if (!com.logicpartners)
-	com.logicpartners = {};
-if (!com.logicpartners.designerTools)
-	com.logicpartners.designerTools = {};
-	
-com.logicpartners.designerTools.rectangle = function() {
-	var self = this;
-	this.counter = 1;
-	this.button = $("<div></div>").addClass("designerToolbarRectangle designerToolbarButton").attr("title", "Rectangle").append($("<div></div>"));
-	this.object =  function(x, y, width, height) {
-		this.name = "Rectangle " + self.counter++;
-		this.x = x;
-		this.y = y;
-		this.width = width;
-		this.height = height;
-		
-		this.getZPLData = function() {
-			return "";
-		}
-
-		this.toZPL = function(labelx, labely, labelwidth, labelheight) {
-			if (this.width > this.height) {
-				return "^FO" + (this.x - labelx) + "," + (this.y - labely) + "^GB" + this.width + ",0," + this.height + "^FS";
-			}
-			
-			return "^FO" + (this.x - labelx) + "," + (this.y - labely) + "^GB" + "0," + this.height + "," + this.width + "^FS";
-		}
-		
-		this.draw = function(context) {
-			context.fillRect(this.x, this.y, this.width, this.height);
-		}
-		
-		this.setWidth = function(width) {
-			this.width = parseInt(width);
-		}
-		
-		this.getWidth = function() {
-			return this.width;
-		}
-		
-		this.setHeight = function(height) {
-			this.height = height;
-		}
-		
-		this.getHeight = function() {
-			return this.height;
-		}
-
-		this.setHandle = function(coords) {
-			this.handle = this.resizeZone(coords);
-		}
-
-		this.getHandle = function() {
-			return this.handle;
-		}
-
-		this.drawActive = function(context) {
-			context.dashedStroke(parseInt(this.x + 1), parseInt(this.y + 1), parseInt(this.x) + parseInt(this.width) - 1, parseInt(this.y) + parseInt(this.height) - 1, [2, 2]);
-		}
-
-		this.hitTest = function(coords) {
-			return (coords.x >= parseInt(this.x) && coords.x <= parseInt(this.x) + parseInt(this.width) && coords.y >= parseInt(this.y) && coords.y <= parseInt(this.y) + parseInt(this.height));
-		}
-	}
-}
+var bo;
+(function (bo) {
+    var designerTools;
+    (function (designerTools) {
+        var rectangleFactory = (function () {
+            function rectangleFactory() {
+                this.button = $("<div></div>").addClass("designerToolbarRectangle designerToolbarButton").attr("title", "Rectangle").append($("<div></div>"));
+            }
+            rectangleFactory.prototype.object = function (x, y, width, height) {
+                this.counter = this.counter || 1;
+                return new rectangleTool(this.counter++, x, y, width, height);
+            };
+            return rectangleFactory;
+        }());
+        designerTools.rectangleFactory = rectangleFactory;
+        var rectangleTool = (function () {
+            function rectangleTool(counter, x, y, width, height) {
+                this.name = "Rectangle " + counter;
+                this.x = x;
+                this.y = y;
+                this.width = width > 30 ? width : 30;
+                this.height = height > 30 ? height : 30;
+                this.rotation = 0;
+                this.canResize = true;
+                this.properties = [
+                    {
+                        name: "name", text: "name", readonly: false, type: "text",
+                        get: function (obj) { return obj.name; }, set: function (obj, value) { obj.name = value; }
+                    },
+                    {
+                        name: "x", text: "x", readonly: false, type: "number",
+                        get: function (obj) { return obj.x; }, set: function (obj, value) { obj.x = value; }
+                    },
+                    {
+                        name: "y", text: "y", readonly: false, type: "number",
+                        get: function (obj) { return obj.y; }, set: function (obj, value) { obj.y = value; }
+                    },
+                    {
+                        name: "width", text: "width", readonly: false, type: "text",
+                        get: function (obj) { return obj.width; }, set: function (obj, value) { obj.width = value; }
+                    },
+                    {
+                        name: "height", text: "height", readonly: false, type: "text",
+                        get: function (obj) { return obj.height; }, set: function (obj, value) { obj.height = value; }
+                    }
+                ];
+            }
+            rectangleTool.prototype.draw = function (context, width, height) {
+                context.fillRect(this.x, this.y, this.width, this.height);
+            };
+            rectangleTool.prototype.drawActive = function (context) {
+                context.dashedStroke(this.x - 5, this.y - 5, this.x + this.width + 5, this.y + this.height + 5, [2, 2]);
+            };
+            rectangleTool.prototype.hitTest = function (coords) {
+                return (coords.x >= this.x && coords.x <= this.x + this.width && coords.y >= this.y && coords.y <= this.y + this.height);
+            };
+            rectangleTool.prototype.toSerializable = function () {
+                return {
+                    type: "rectangleTool", name: this.name, x: this.x, y: this.y, width: this.width,
+                    height: this.height
+                };
+            };
+            rectangleTool.fromObject = function (object) {
+                var result = new rectangleTool(1, object.x, object.y, object.width, object.height);
+                result.name = object.name;
+                return result;
+            };
+            return rectangleTool;
+        }());
+        designerTools.rectangleTool = rectangleTool;
+    })(designerTools = bo.designerTools || (bo.designerTools = {}));
+})(bo || (bo = {}));
+//# sourceMappingURL=rectangle.js.map

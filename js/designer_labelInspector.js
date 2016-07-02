@@ -1,53 +1,42 @@
-if (!com)
-	var com = {};
-if (!com.logicpartners)
-	com.logicpartners = {};
-	
-com.logicpartners.labelInspector = function(designer, canvas) {
-	this.canvas = canvas;
-	this.canvasElement = $(canvas);
-	this.labelDesigner = designer;
-	var self = this;
-	this.boundingBox = null;
-	
-	this.updatePosition = function(xchange) {
-		this.inspectorWindow.css("width", parseInt(this.inspectorWindow.css("width")) + xchange);
-		this.boundingBox = this.inspectorWindow[0].getBoundingClientRect();
-	}
-	
-	// Create the property window.
-	this.inspectorWindow = $('<div></div>')
-			.addClass("designerUtilityToolbar designerUtilityLabelInspector")
-			.css({
-				"left": this.labelDesigner.toolbar.boundingBox.left,
-				"top": this.canvas.getBoundingClientRect().top - 50,
-				"width" : this.labelDesigner.propertyInspector.boundingBox.right - this.labelDesigner.toolbar.boundingBox.left
-			})
-			//.draggable({handle: "div.designerPropertyTitle"})
-			.insertAfter(this.canvasElement);
-
-
-	this.toolsViewContainer = $('<div></div>')
-			.addClass("designerLabelContent")
-			.appendTo(this.inspectorWindow);
-
-	/*
-	this.titleBar = $('<div>Tools</div>')
-			.addClass("designerPropertyTitle")
-			.prependTo(this.toolsWindow)
-			.on("dblclick", function() {
-				self.toolsViewContainer.toggle();
-			});
-	*/
-
-	this.buttonView = $('<div></div>')
-			.appendTo(this.toolsViewContainer);
-	
-	this.update = function(activeElement) {
-	}
-	
-	this.addTool = function(controller) {
-		console.log(controller.workspace.html());
-		this.buttonView.append(controller.workspace);
-	}
-}
+var bo;
+(function (bo) {
+    var labelInspector = (function () {
+        function labelInspector(designer, canvas) {
+            this.designer = designer;
+            this.canvas = canvas;
+            var self = this;
+            this.canvasElement = $(canvas);
+            this.boundingBox = null;
+            this.inspectorWindow = this.buildInspectorWindow(canvas);
+            this.toolsViewContainer = this.buildToolsViewContainer();
+        }
+        labelInspector.prototype.updatePosition = function (xchange) {
+            this.inspectorWindow.css("width", parseInt(this.inspectorWindow.css("width")) + xchange);
+            this.boundingBox = this.inspectorWindow[0].getBoundingClientRect();
+        };
+        labelInspector.prototype.update = function (activeElement) {
+            this.toolsViewContainer.html('');
+            for (var _i = 0, _a = this.designer.elements; _i < _a.length; _i++) {
+                var element = _a[_i];
+                if (element != null) {
+                    $('<div></div>').html(element.name).appendTo(this.toolsViewContainer);
+                }
+            }
+        };
+        labelInspector.prototype.buildInspectorWindow = function (canvas) {
+            return $('<div></div>')
+                .addClass("designerUtilityToolbar designerUtilityLabelInspector")
+                .css({
+                "left": this.canvas.getBoundingClientRect().left - 90,
+                "top": this.canvas.getBoundingClientRect().top + 350
+            })
+                .insertAfter(this.canvasElement);
+        };
+        labelInspector.prototype.buildToolsViewContainer = function () {
+            return $('<div></div>').addClass("designerLabelContent").appendTo(this.inspectorWindow);
+        };
+        return labelInspector;
+    }());
+    bo.labelInspector = labelInspector;
+})(bo || (bo = {}));
+//# sourceMappingURL=designer_labelInspector.js.map

@@ -1,18 +1,18 @@
 .designerUtilityWindow {
 	position: absolute !important;
 	width: 220px;
-	border: 2px solid #AA0000;
+	border: 2px solid #ffffff;
 	border-radius: 4px;
 }
 
 .designerUtilityToolbar {
 	position: absolute !important;
 	width: 80px;
-	border: 2px solid #AA0000;
+	border: 2px solid #ffffff;
 	border-radius: 4px;
 }
 
-.designerUtilityLabelInspector {
+.designerUtilityLabelSizeInspector {
 	height: 40px;
 	line-height: 36px;
 }
@@ -21,7 +21,7 @@
 	height: 140px;
 	overflow: hidden;
 	background: #EEEEEE;
-	border-top: 1px solid #AA0000;
+	border-top: 1px solid #ffffff;
 	padding-bottom: 15px;
 }
 
@@ -45,6 +45,12 @@
 
 .designerLabelControlElement {
 	
+}
+
+.designerLabelActionElement{
+	margin: 5px;
+	width: 30px;
+	height: 25px;
 }
 
 .designerLabelControlContainer {
@@ -85,17 +91,17 @@
 }
 
 .designerToolbarBarcode {
-	background-image: url(../toolbar_barcode.gif);
+	background-image: url(../images/toolbar_barcode.gif);
 }
 
 .designerToolbarRectangle {
-	background-image: url(../toolbar_rectangle.gif);
+	background-image: url(../images/toolbar_rectangle.gif);
 }
 
 .designerToolbarText {
-	background-image: url(../toolbar_text.gif);
+	background-image: url(../images/toolbar_text.gif);
 }
 
 .designerToolbarImage {
-	background-image: url(../toolbar_image.gif);
+	background-image: url(../images/toolbar_image.gif);
 }
