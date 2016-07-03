@@ -21,7 +21,6 @@ describe("helper tests", () => {
   it('point [114,101] is within polygon [113,100][113,102][214,102][214,100]',
     () => expect(bo.helpers.mathHelper.isPointWithinPolygon(point, polygon)).toEqual(true)
   );
-
   
   var point2 = new bo.helpers.point(-5, 1);
   var polygon2 = [new bo.helpers.point(0, 0), new bo.helpers.point(0, 15), new bo.helpers.point(15, 15)

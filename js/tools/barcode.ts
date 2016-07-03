@@ -12,7 +12,17 @@ module bo.designerTools {
 
 		object(x: number, y: number, width: number, height: number): bo.designerTools.tool {
 			this.counter = this.counter || 1;
+			this.deactivateTool();
 			return new barcodeTool(this.counter++, x, y, width, height);
+		}
+
+		activate(window:toolsWindow){}
+
+		activateTool():void{
+			this.button.addClass("designerToolbarButtonActive");
+		}
+		deactivateTool():void{
+			this.button.removeClass("designerToolbarButtonActive");
 		}
 	}
 

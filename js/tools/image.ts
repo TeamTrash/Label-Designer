@@ -4,14 +4,25 @@ module bo.designerTools {
 			this.button = $("<div></div>").addClass("designerToolbarImage designerToolbarButton").attr("title", "Image").append($("<div></div>"));
 		}
 
-		button: JQuery;
-		private counter: number;
-		private data: any;
 		width: number;
 		height: number;
 
+		private button: JQuery;
+		private counter: number;
+		private data: any;
+
 		object(x: number, y: number, width: number, height: number): bo.designerTools.tool {
+			this.button.removeClass("designerToolbarButtonActive");
+
 			return this.internalObject(x, y, width, height, null);
+		}
+		
+		activateTool():void{
+			this.button.addClass("designerToolbarButtonActive");
+		}
+		
+		deactivateTool():void{
+			this.button.removeClass("designerToolbarButtonActive");
 		}
 
 		private internalObject(x: number, y: number, width: number, height: number, data: any): bo.designerTools.tool {
@@ -21,7 +32,7 @@ module bo.designerTools {
 			return result;
 		}
 
-		activate(toolbar: any) {
+		activate(toolbar: toolsWindow) {
 			this.data = null;
 			var self = this;
 
@@ -123,7 +134,7 @@ module bo.designerTools {
 			this.x = x;
 			this.y = y;
 			this.width = width;
-			this.height = height;x
+			this.height = height; x
 			this.rotation = 0;
 			this.canResize = true;
 
@@ -182,16 +193,16 @@ module bo.designerTools {
 		}
 
 		drawActive(context: any) {
-			context.dashedStroke((this.x -5), (this.y -5), (this.x) + (this.width) + 5, (this.y) + (this.height) + 5, [2, 2]);
+			context.dashedStroke((this.x - 5), (this.y - 5), (this.x) + (this.width) + 5, (this.y) + (this.height) + 5, [2, 2]);
 		}
 
 		hitTest(coords: any) {
 			return (coords.x >= (this.x) && coords.x <= (this.x) + (this.width) && coords.y >= (this.y) && coords.y <= (this.y) + (this.height));
 		}
-		
+
         toSerializable(): any {
 			return {
-				type: "imageTool", uniqueID: this.uniqueID, name: this.name, x: this.x, y: this.y, 
+				type: "imageTool", uniqueID: this.uniqueID, name: this.name, x: this.x, y: this.y,
 				width: this.width, height: this.height, data: this.data
 			};
 		}

@@ -1,6 +1,6 @@
 module bo {
 	export class propertyInspector {
-		constructor(private designer: any, private canvas: HTMLElement) {
+		constructor(private designer: labelDesigner, private canvas: HTMLElement) {
 			this.canvasElement = $(canvas);
 			this.activeElement = null;
 			this.propertyNodes = {};
@@ -11,13 +11,16 @@ module bo {
 			this.titleBar = this.buildTitleBar(this.propertyViewContainer);
 			this.propertyView = this.buildPropertyView(this.propertyViewContainer);
 
+			this.designer.updating.on((tool) => this.update(tool));
+
 			this.updatePosition(0);
 		}
 
+		boundingBox: any;
+
 		private canvasElement: JQuery;
-		private activeElement: any;
+		private activeElement: bo.designerTools.tool;
 		private propertyNodes: any;
-		private boundingBox: any;
 		private propertyInspector: JQuery;
 		private titleBar: JQuery;
 		private propertyView: JQuery;
@@ -55,7 +58,7 @@ module bo {
 				for (var item of activeElement.properties) {
 					var row = $("<tr></tr>");
 
-					var editor:JQuery = null;
+					var editor: JQuery = null;
 					if (item.type == "text" || item.type == "number") {
 						var editor = $(`<input type='text' name='${item.name}'' value='${item.get(activeElement)}'>`);
 					}

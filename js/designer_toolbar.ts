@@ -1,6 +1,6 @@
 module bo {
 	export class toolsWindow {
-		constructor(private designer: any, private canvas: HTMLElement) {
+		constructor(public designer: labelDesigner, private canvas: HTMLElement) {
 			this.canvasElement = $(canvas);
 			this.boundingBox = null;
 
@@ -11,22 +11,23 @@ module bo {
 			this.updatePosition(0);
 		}
 
+		boundingBox: any;
+
 		private toolsWindow: JQuery;
 		private toolsViewContainer: JQuery;
 		private canvasElement: JQuery;
-		private boundingBox: any;
 		private buttonView: JQuery;
 
-		setTool(controller:any) {
+		setTool(controller:bo.designerTools.toolFactory) {
 			if (this.designer.newObjectController == controller) {
 				this.designer.setNewObject(null);
-				controller.button.removeClass("designerToolbarButtonActive");
+				controller.deactivateTool();
 			}
 			else {
-				if (this.designer.newObjectController) this.designer.newObjectController.button.removeClass("designerToolbarButtonActive");
+				if (this.designer.newObjectController) this.designer.newObjectController.deactivateTool;
 				this.designer.setNewObject(controller);
 				if (controller) {
-					controller.button.addClass("designerToolbarButtonActive");
+					controller.activateTool();
 
 					if (controller.activate) controller.activate(this);
 				}

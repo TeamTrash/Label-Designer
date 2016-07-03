@@ -7,12 +7,24 @@ module bo.designerTools {
 			this.button = $("<div></div>").addClass("designerToolbarText designerToolbarButton").attr("title", "Text").append($("<div></div>"));
 		}
 
-		button: JQuery;
+		private button: JQuery;
 		private counter: number;
 
 		object(x: number, y: number, width: number, height: number): bo.designerTools.tool {
 			this.counter = this.counter || 1;
+			this.button.removeClass("designerToolbarButtonActive");
+
 			return new textTool(this.counter++, x, y, width, height);
+		}
+
+		activate(window:toolsWindow){}
+
+		activateTool():void{
+			this.button.addClass("designerToolbarButtonActive");
+		}
+		
+		deactivateTool():void{
+			this.button.removeClass("designerToolbarButtonActive");
 		}
 	}
 

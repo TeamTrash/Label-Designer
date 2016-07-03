@@ -1,7 +1,5 @@
 # Label-Designer
-Javascript / Web Based designer for industrial printers.
-
-This is the start of a Javascript based designer for creating labels.
+Typescript / Web Based designer for industrial printers.
 
 # DEMO
 http://jlucaspains.github.io/Label-Designer/index.html

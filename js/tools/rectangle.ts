@@ -6,12 +6,24 @@ module bo.designerTools {
 			this.button = $("<div></div>").addClass("designerToolbarRectangle designerToolbarButton").attr("title", "Rectangle").append($("<div></div>"));
 		}
 
-		button: JQuery;
+		private button: JQuery;
 		private counter: number;
 
 		object(x: number, y: number, width: number, height: number): bo.designerTools.tool {
 			this.counter = this.counter || 1;
+			this.button.removeClass("designerToolbarButtonActive");
+
 			return new rectangleTool(this.counter++, x, y, width, height);
+		}
+
+		activate(window:toolsWindow){}
+		
+		activateTool():void{
+			this.button.addClass("designerToolbarButtonActive");
+		}
+		
+		deactivateTool():void{
+			this.button.removeClass("designerToolbarButtonActive");
 		}
 	}
 
@@ -63,7 +75,7 @@ module bo.designerTools {
 		}
 
 		drawActive(context: any): void {
-			context.dashedStroke(this.x - 5 , this.y - 5 , this.x + this.width + 5, this.y + this.height + 5, [2, 2]);
+			context.dashedStroke(this.x - 5, this.y - 5, this.x + this.width + 5, this.y + this.height + 5, [2, 2]);
 		}
 
 		hitTest(coords: point): boolean {
@@ -72,7 +84,7 @@ module bo.designerTools {
 
         toSerializable(): any {
 			return {
-				type: "rectangleTool", name: this.name, x: this.x, y: this.y, width: this.width, 
+				type: "rectangleTool", name: this.name, x: this.x, y: this.y, width: this.width,
 				height: this.height
 			};
 		}

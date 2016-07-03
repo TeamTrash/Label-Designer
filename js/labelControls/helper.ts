@@ -1,6 +1,6 @@
 module bo.helpers {
     export class mathHelper {
-		static rotate(origin: point, pointToRotate:point, angle: number): point {
+		static rotate(origin: point, pointToRotate: point, angle: number): point {
             var radians = (Math.PI / 180) * angle,
 				cos = Math.cos(radians),
 				sin = Math.sin(radians),
@@ -10,7 +10,7 @@ module bo.helpers {
 			return new point(nx, ny);
         }
 
-		static isPointWithinPolygon(point:point, vs: Array<point>) {
+		static isPointWithinPolygon(point: point, vs: Array<point>) {
 			// ray-casting algorithm based on
 			// http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
 
@@ -32,8 +32,29 @@ module bo.helpers {
 	export class point {
 		constructor(public x: number, public y: number) { }
 
-		round():point{
+		round(): point {
 			return new point(Math.round(this.x), Math.round(this.y))
+		}
+	}
+
+	export interface ILiteEvent<T> {
+		on(handler: { (data?: T): void }): void;
+		off(handler: { (data?: T): void }): void;
+	}
+
+	export class LiteEvent<T> implements ILiteEvent<T> {
+		private handlers: { (data?: T): void; }[] = [];
+
+		public on(handler: { (data?: T): void }) {
+			this.handlers.push(handler);
+		}
+
+		public off(handler: { (data?: T): void }) {
+			this.handlers = this.handlers.filter(h => h !== handler);
+		}
+
+		public trigger(data?: T) {
+			this.handlers.slice(0).forEach(h => h(data));
 		}
 	}
 }

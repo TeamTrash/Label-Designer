@@ -16,7 +16,9 @@ module bo.designerTools {
     }
 
     export interface toolFactory {
-        button: JQuery;
+        activate(window:toolsWindow);
+        activateTool();
+        deactivateTool();
         object(x: number, y: number, width: number, height: number): bo.designerTools.tool;
     }
 

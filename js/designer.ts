@@ -93,7 +93,6 @@ module bo {
 			this.elements = [];
 			this.currentLayer = 0;
 			this.activeElement = null;
-			this.activeTool = null;
 
 			this.labelX = this.canvas.width / 2 - this.labelWidth / 2;
 			this.labelY = 5;
@@ -118,17 +117,16 @@ module bo {
 		labelHeight: number;
 		elements: Array<tool>;
 		activeElement: tool;
+		toolbar: bo.toolsWindow;
+		propertyInspector: bo.propertyInspector;
+		newObjectController: toolFactory;
+    	get updating(): bo.helpers.ILiteEvent<bo.designerTools.tool> { return this.onUpdating; } 
 
-		private propertyInspector: bo.propertyInspector;
-		private toolbar: bo.toolsWindow;
+		private onUpdating = new bo.helpers.LiteEvent<bo.designerTools.tool>();
 		private labelSizeInspector: bo.labelSizeInspector;
 		private labelInspector: bo.labelInspector;
-
 		private drawingContext: CanvasRenderingContext2D;
 		private currentLayer: number;
-		private activeTool: any;
-		private newObjectController: toolFactory;
-
 		private labelX: number;
 		private labelY: number;
 		private dragStartPosition: bo.helpers.point;
@@ -381,7 +379,8 @@ module bo {
 		}
 
 		updateCanvas(): void {
-			this.update();
+			//this.update();
+			this.onUpdating.trigger(this.activeElement);
 
 			this.drawingContext.fillStyle = "#FFFFFF";
 			this.drawingContext.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -428,7 +427,6 @@ module bo {
 					self.elements[self.currentLayer++] = self.newObjectController.object(self.dragStartPosition.x, self.dragStartPosition.y, 1, 1);
 					self.dragAction = 8;
 					self.activeElement = self.elements[self.currentLayer - 1];
-					self.newObjectController.button.removeClass("designerToolbarButtonActive");
 					self.newObjectController = null;
 				}
 				else {
