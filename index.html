@@ -1,42 +1,77 @@
 <html>
-    <head>
-        
-		<link rel="stylesheet" href="css/designer.css">
-        <script language="javascript" type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-        <script language="javascript" type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
-		<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/themes/smoothness/jquery-ui.css">
-		<link rel="stylesheet" href="css/font-awesome.min.css">
-		
-        <script language="javascript" type="text/javascript" src="js/designer.js"></script>
-        <script language="javascript" type="text/javascript" src="js/designer_propertyInspector.js"></script>
-        <script language="javascript" type="text/javascript" src="js/designer_toolbar.js"></script>
-        <script language="javascript" type="text/javascript" src="js/designer_labelSizeInspector.js"></script>
-        <script language="javascript" type="text/javascript" src="js/designer_labelInspector.js"></script>
-        <script language="javascript" type="text/javascript" src="js/labelControls/sizeControl.js"></script>
-        <script language="javascript" type="text/javascript" src="js/labelControls/loadSaveControl.js"></script>
-        <script language="javascript" type="text/javascript" src="js/labelControls/helper.js"></script>
-        <script language="javascript" type="text/javascript" src="js/tools/rectangle.js"></script>
-        <script language="javascript" type="text/javascript" src="js/tools/barcode.js"></script>
-        <script language="javascript" type="text/javascript" src="js/tools/text.js"></script>
-        <script language="javascript" type="text/javascript" src="js/tools/image.js"></script>
-        <script language="javascript" type="text/javascript" src="js/tools/tool.js"></script>
-        <script language="javascript" type="text/javascript" src="js/lib/file-saver.min.js"></script>
-        <script language="javascript" type="text/javascript" src="js/lib/JsBarcode.all.min.js"></script>
-        <script>
-			var canvasDesigner = null;
+
+<head>
+
+    <link rel="stylesheet" href="css/designer.css">
+    <script language="javascript" type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7"
+        crossorigin="anonymous">
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS"
+        crossorigin="anonymous"></script>
+    <script language="javascript" type="text/javascript" src="js/designer.js"></script>
+    <script language="javascript" type="text/javascript" src="js/designer_propertyInspector.js"></script>
+    <script language="javascript" type="text/javascript" src="js/designer_toolbar.js"></script>
+    <script language="javascript" type="text/javascript" src="js/designer_labelSizeInspector.js"></script>
+    <script language="javascript" type="text/javascript" src="js/designer_labelOutlineInspector.js"></script>
+    <script language="javascript" type="text/javascript" src="js/labelControls/sizeControl.js"></script>
+    <script language="javascript" type="text/javascript" src="js/labelControls/loadSaveControl.js"></script>
+    <script language="javascript" type="text/javascript" src="js/labelControls/helper.js"></script>
+    <script language="javascript" type="text/javascript" src="js/tools/rectangle.js"></script>
+    <script language="javascript" type="text/javascript" src="js/tools/barcode.js"></script>
+    <script language="javascript" type="text/javascript" src="js/tools/text.js"></script>
+    <script language="javascript" type="text/javascript" src="js/tools/image.js"></script>
+    <script language="javascript" type="text/javascript" src="js/tools/tool.js"></script>
+    <script language="javascript" type="text/javascript" src="js/lib/file-saver.min.js"></script>
+    <script language="javascript" type="text/javascript" src="js/lib/JsBarcode.all.min.js"></script>
+    <script>
+			var designer = null;
+            var labelSizeInspector = null;
+            var labelOutlineInspector = null;
+            var labelOutlineInspector = null;
+            var labelTools = null;
+            var labelPropertyInspector = null;
             $(document).ready(function() {
-                canvasDesigner = new bo.labelDesigner('labelDesigner', 4, 3);
-				canvasDesigner.labelSizeInspector.addTool(new bo.helpers.sizeControl(canvasDesigner));
-				canvasDesigner.labelSizeInspector.addTool(new bo.helpers.loadSaveControl(canvasDesigner));
-				canvasDesigner.toolbar.addTool(new bo.designerTools.textFactory());
-				canvasDesigner.toolbar.addTool(new bo.designerTools.rectangleFactory());
-				canvasDesigner.toolbar.addTool(new bo.designerTools.barcodeFactory());
-				canvasDesigner.toolbar.addTool(new bo.designerTools.imageFactory());
+                designer = new bo.LabelDesigner('labelDesigner', 4, 3);
+                
+                labelSizeInspector = new bo.LabelSizeInspector(designer, $("#toolbar"));
+				labelSizeInspector.addTool(new bo.helpers.LoadSaveControl(designer));
+				labelSizeInspector.addTool(new bo.helpers.SizeControl(designer));
+				
+                labelOutlineInspector = new bo.LabelOutlineInspector(designer, $("#outline"))
+
+                labelTools = new bo.ToolsWindow(designer, $("#label-tools"));
+                labelTools.addTool(new bo.designerTools.TextFactory());
+				labelTools.addTool(new bo.designerTools.RectangleFactory());
+				labelTools.addTool(new bo.designerTools.BarcodeFactory());
+				labelTools.addTool(new bo.designerTools.ImageFactory());
+
+                labelPropertyInspector = new bo.PropertyInspector(designer, $("#properties"));
             });
         </script>
-    </head>
-    <body>
-        <canvas id="labelDesigner" tabindex="1" width="800" height="800" style="margin-left: 100px; margin-top: 50px; border: 1px solid #CCCCCC;">
-        </canvas>
-    </body>
+</head>
+
+<body>
+    <div class="container">
+        <div id="toolbar">
+        </div>
+        <div id="tools" class="col-md-3">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#label-tools" aria-controls="label-tools" role="tab" data-toggle="tab">tools</a></li>
+                <li role="presentation"><a href="#outline" aria-controls="outline" role="tab" data-toggle="tab">outline</a></li>
+                <li role="presentation"><a href="#properties" aria-controls="properties" role="tab" data-toggle="tab">properties</a></li>
+            </ul>
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="label-tools"></div>
+                <div role="tabpanel" class="tab-pane" id="outline"></div>
+                <div role="tabpanel" class="tab-pane" id="properties"></div>
+            </div>
+        </div>
+        <div id="designer" class="col-md-9">
+            <canvas id="labelDesigner" tabindex="1" width="800" height="800">
+            </canvas>
+        </div>
+    </div>
+</body>
+
 </html>

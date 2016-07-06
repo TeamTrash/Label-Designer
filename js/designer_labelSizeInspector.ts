@@ -1,52 +1,31 @@
 module bo {
-	export class labelSizeInspector {
-		constructor(private designer: labelDesigner, private canvas: HTMLElement) {
-			this.canvas = canvas;
-			this.canvasElement = $(canvas);
-			this.designer = designer;
-			var self = this;
+	export class LabelSizeInspector {
+		private buttonView: JQuery;
 
-			this.inspectorWindow = this.buildInspectorWindow(designer, canvas, this.canvasElement);
-			this.toolsViewContainer = this.buildToolsViewContainer(this.inspectorWindow);
-			this.buttonView = this.buildButtonView(this.toolsViewContainer);
+		constructor(private designer: LabelDesigner, private container: JQuery) {
+			this.buttonView = this.buildButtonView(container);
 		}
 
-		private canvasElement: JQuery;
-		private inspectorWindow: JQuery;
-		private toolsViewContainer: JQuery;
-		private buttonView: JQuery
+		public update(activeElement) { }
 
-		updatePosition(xchange:number) {
-			this.inspectorWindow.css("width", parseInt(this.inspectorWindow.css("width")) + xchange);
-		}
-
-		update(activeElement) {
-		}
-
-		addTool(controller) {
+		public addTool(controller) {
 			this.buttonView.append(controller.workspace);
 		}
 
-		private buildInspectorWindow(designer: labelDesigner, canvas: HTMLElement, canvasElement: JQuery): JQuery {
-			return $('<div></div>')
-				.addClass("designerUtilityToolbar designerUtilityLabelSizeInspector")
-				.css({
-					"left": designer.toolbar.boundingBox.left,
-					"top": canvas.getBoundingClientRect().top - 50,
-					"width": designer.propertyInspector.boundingBox.right - designer.toolbar.boundingBox.left
-				})
-				//.draggable({handle: "div.designerPropertyTitle"})
-				.insertAfter(canvasElement);
-		}
+		private buildButtonView(container: JQuery): JQuery {
+			let top = $("<nav></nav>")
+				.addClass("navbar navbar-default")
+				.appendTo(container);
+			let fluid = $("<div></div>").addClass("container-fluid").appendTo(top);
+			$("<div></div>").addClass("navbar-header")
+				.append($("<span></span>").addClass("navbar-brand").html("Label Designer"))
+				.appendTo(fluid);
+			let navbar = $("<div></div>")
+				.addClass("collapse navbar-collapse")
+				.appendTo(fluid);
+			let form = $("<form></form>").addClass("navbar-form").appendTo(navbar);
 
-		private buildToolsViewContainer(inspectorWindow: JQuery): JQuery {
-			return $('<div></div>')
-				.addClass("designerLabelContent")
-				.appendTo(inspectorWindow)
-		}
-
-		private buildButtonView(toolsViewContainer: JQuery): JQuery {
-			return $('<div></div>').appendTo(toolsViewContainer)
+			return form;
 		}
 	}
 }

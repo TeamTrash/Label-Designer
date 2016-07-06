@@ -1,111 +1,41 @@
-.designerUtilityWindow {
-	position: absolute !important;
-	width: 220px;
-	border: 2px solid #ffffff;
-	border-radius: 4px;
+#labelDesigner{
+	border: 1px solid #CCCCCC;
 }
 
-.designerUtilityToolbar {
-	position: absolute !important;
-	width: 80px;
-	border: 2px solid #ffffff;
-	border-radius: 4px;
+#toolbar{
+	width:100%;
+	margin: 20px 0 20px 0;
 }
 
-.designerUtilityLabelSizeInspector {
-	height: 40px;
-	line-height: 36px;
+#toolbar .form-control {
+	display:inline;
 }
 
-.designerPropertyContainer {
-	height: 140px;
-	overflow: hidden;
-	background: #EEEEEE;
-	border-top: 1px solid #ffffff;
-	padding-bottom: 15px;
+#toolbar button {
+	font-size:2rem;
+	padding: 0.7rem;
 }
 
-.designerPropertyContent {
-	height : 100%;
-	overflow-y: auto;
-	overflow-x: hidden;
-	background: #FFFFFF;
+#toolbar .label-toolbar-group {
+	display:inline;
 }
 
-.designerToolbarContent {
-	height: 300px;
-	overflow-y: hidden;
-	overflow-x: hidden;
-	background: #FFFFFF;
+#toolbar .label-size-element {
+	display:inline-table;
+	margin-left:0.5rem;
+	margin-right:0.5rem;
 }
 
-.designerLabelContent {
-	padding: 2px;
-}
-
-.designerLabelControlElement {
-	
-}
-
-.designerLabelActionElement{
-	margin: 5px;
-	width: 30px;
-	height: 25px;
-}
-
-.designerLabelControlContainer {
-	float: left;
-	padding: 0px 4px 2px 4px;
-	margin: 0px 1px 0px 4px;
-	font-size: 12px;
-	border-radius: 5px;
-	background: #EEEEEE;
-	border: 1px solid #DDDDDD;
-	height: 33px;
-}
-
-.designerPropertyTitle {
-	background: #F0B7A1;
-	font-size: 12px;
-	font-weight: bold;
-	padding: 5px;
-	height: 20px;
-	line-height: 20px;
-	/*cursor: move;*/
-}
-
-.designerToolbarButton {
-	background-size: 36px 36px; 
-	width: 36px;
-	height: 36px;
-	margin: 2px;
-	float: left;
-}
-
-.designerToolbarButtonActive div {
-	background: rgba(255, 255, 0, 0.15);
-	background-size: 36px 36px;
-	width: 100%;
-	height: 100%;
-	border-radius: 4px;
-}
-
-.designerToolbarBarcode {
-	background-image: url(../images/toolbar_barcode.gif);
-}
-
-.designerToolbarRectangle {
-	background-image: url(../images/toolbar_rectangle.gif);
-}
-
-.designerToolbarText {
-	background-image: url(../images/toolbar_text.gif);
-}
-
-.designerToolbarImage {
-	background-image: url(../images/toolbar_image.gif);
+#label-tools button {
+	font-size: 2.5rem;
+    padding: 0.6rem;
+	margin: 0.4rem;
 }
 
 .label-inspector-item {
 	cursor: pointer
+}
+
+.tab-pane > div {
+	margin: 10px;
 }
