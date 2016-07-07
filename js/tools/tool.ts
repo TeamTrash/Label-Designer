@@ -1,5 +1,5 @@
 module bo.designerTools {
-    export interface tool {
+    export interface Tool {
         name: string;
         x: number;
         y: number;
@@ -15,15 +15,17 @@ module bo.designerTools {
         toSerializable(): any;
     }
 
-    export interface toolFactory {
-        button: JQuery;
-        object(x: number, y: number, width: number, height: number): bo.designerTools.tool;
+    export interface ToolFactory {
+        activate(window: ToolsWindow);
+        activateTool();
+        deactivateTool();
+        object(x: number, y: number, width: number, height: number): bo.designerTools.Tool;
     }
 
     export const typeMapping: any = {
-        'textTool': textTool,
-        'rectangleTool': rectangleTool,
-        'barcodeTool': barcodeTool,
-        'imageTool': imageTool
+        "textTool": TextTool,
+        "rectangleTool": RectangleTool,
+        "barcodeTool": BarcodeTool,
+        "imageTool": ImageTool,
     };
 }

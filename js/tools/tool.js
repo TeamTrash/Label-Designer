@@ -3,10 +3,10 @@ var bo;
     var designerTools;
     (function (designerTools) {
         designerTools.typeMapping = {
-            'textTool': designerTools.textTool,
-            'rectangleTool': designerTools.rectangleTool,
-            'barcodeTool': designerTools.barcodeTool,
-            'imageTool': designerTools.imageTool
+            "textTool": designerTools.TextTool,
+            "rectangleTool": designerTools.RectangleTool,
+            "barcodeTool": designerTools.BarcodeTool,
+            "imageTool": designerTools.ImageTool,
         };
     })(designerTools = bo.designerTools || (bo.designerTools = {}));
 })(bo || (bo = {}));

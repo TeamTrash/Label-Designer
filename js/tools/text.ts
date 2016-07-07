@@ -1,22 +1,56 @@
 module bo.designerTools {
-	import point = bo.helpers.point;
-	import mathHelper = bo.helpers.mathHelper;
+	import Point = bo.helpers.Point;
+	import MathHelper = bo.helpers.MathHelper;
 
-	export class textFactory implements toolFactory {
-		constructor() {
-			this.button = $("<div></div>").addClass("designerToolbarText designerToolbarButton").attr("title", "Text").append($("<div></div>"));
-		}
-
-		button: JQuery;
+	export class TextFactory implements ToolFactory {
+		private button: JQuery;
 		private counter: number;
 
-		object(x: number, y: number, width: number, height: number): bo.designerTools.tool {
+		constructor() {
+			this.button = $("<button></button>").append($("<span></span>").addClass("glyphicon glyphicon-font"));
+		}
+
+		public object(x: number, y: number, width: number, height: number): Tool {
 			this.counter = this.counter || 1;
-			return new textTool(this.counter++, x, y, width, height);
+
+			return new TextTool(this.counter++, x, y, width, height);
+		}
+
+		public activate(window: ToolsWindow) { }
+
+		public activateTool(): void {
+			this.button.addClass("active");
+		}
+
+		public deactivateTool(): void {
+			this.button.removeClass("active");
 		}
 	}
 
-	export class textTool implements tool {
+	export class TextTool implements Tool {
+		public name: string;
+		public text: string;
+		public x: number;
+		public y: number;
+		public fontSize: number;
+		public fontType: string;
+		public width: number;
+		public height: number;
+		public rotation: number;
+		public canResize: boolean;
+		public properties: any;
+
+        public static fromObject(object: any) {
+			let result = new TextTool(1, object.x, object.y, object.width, object.height);
+			result.name = object.name;
+			result.text = object.text;
+			result.fontSize = object.fontSize;
+			result.fontType = object.fontType;
+			result.rotation = object.rotation;
+
+			return result;
+		}
+
 		constructor(counter: number, x: number, y: number, width: number, height: number) {
 			this.name = `Textbox ${counter}`;
 			this.text = this.name;
@@ -57,37 +91,25 @@ module bo.designerTools {
 			];
 		}
 
-		name: string;
-		text: string;
-		x: number;
-		y: number;
-		fontSize: number;
-		fontType: string;
-		width: number;
-		height: number;
-		rotation: number;
-		canResize: boolean;
-		properties: any;
-
-		getFontHeight(): number {
-			var textMeasure = $("<div></div>").css({
+		public getFontHeight(): number {
+			let textMeasure = $("<div></div>").css({
 				"font-size": this.fontSize + "px",
 				"font-family": this.fontType,
 				"opacity": 0,
 			}).text("M").appendTo($("body"));
 
-			var height = textMeasure.outerHeight();
+			let height = textMeasure.outerHeight();
 			textMeasure.remove();
 
 			return height;
 		}
 
-		draw(context: any, width?: number, height?: number): void {
+		public draw(context: any, width?: number, height?: number): void {
 			context.font = this.fontSize + "px " + this.fontType;
-			var oColor = context.fillStyle;
+			let oColor = context.fillStyle;
 			context.fillStyle = "white";
 			this.height = this.getFontHeight();
-			var measuredText = context.measureText(this.text);
+			let measuredText = context.measureText(this.text);
 			this.width = measuredText.width;
 			context.globalCompositeOperation = "difference";
 			context.save();
@@ -99,7 +121,7 @@ module bo.designerTools {
 			context.fillStyle = oColor;
 		}
 
-		drawActive(context): void {
+		public drawActive(context): void {
 			context.save();
 
 			context.translate(this.x, this.y + this.height / 2);
@@ -110,38 +132,27 @@ module bo.designerTools {
 			context.restore();
 		}
 
-		hitTest(coords): boolean {
-			var originX = this.x;
-			var originY = this.y + this.height / 2;
+		public hitTest(coords: Point): boolean {
+			let originX = this.x;
+			let originY = this.y + this.height / 2;
 
-			var rotation = this.rotation;
+			let rotation = this.rotation;
 
-			var rotatedTopLeft = mathHelper.rotate(new point(originX, originY), new point(this.x, this.y), rotation);
-			var rotatedBottomLeft = mathHelper.rotate(new point(originX, originY), new point(this.x, this.y + this.height), rotation);
-			var rotatedTopRight = mathHelper.rotate(new point(originX, originY), new point(this.x + this.width, this.y), rotation);
-			var rotatedBottomRight = mathHelper.rotate(new point(originX, originY), new point(this.x + this.width, this.y + this.height), rotation);
-			var area = [rotatedTopLeft, rotatedBottomLeft, rotatedBottomRight, rotatedTopRight]
-			var hitTest = bo.helpers.mathHelper.isPointWithinPolygon(new point(coords.x, coords.y), area)
+			let rotatedTopLeft = MathHelper.rotate(new Point(originX, originY), new Point(this.x, this.y), rotation);
+			let rotatedBottomLeft = MathHelper.rotate(new Point(originX, originY), new Point(this.x, this.y + this.height), rotation);
+			let rotatedTopRight = MathHelper.rotate(new Point(originX, originY), new Point(this.x + this.width, this.y), rotation);
+			let rotatedBottomRight = MathHelper.rotate(new Point(originX, originY), new Point(this.x + this.width, this.y + this.height), rotation);
+			let area = [rotatedTopLeft, rotatedBottomLeft, rotatedBottomRight, rotatedTopRight]
+			let hitTest = bo.helpers.MathHelper.isPointWithinPolygon(new Point(coords.x, coords.y), area)
 
 			return hitTest;
 		}
 
-        toSerializable(): any {
+        public toSerializable(): any {
 			return {
-				type: "textTool", name: this.name, text: this.text, x: this.x, y: this.y, fontSize: this.fontSize,
-				fontType: this.fontType, width: this.width, height: this.height, rotation: this.rotation
+				fontSize: this.fontSize, fontType: this.fontType, height: this.height, name: this.name, rotation: this.rotation,
+				text: this.text, type: "textTool", width: this.width, x: this.x, y: this.y,
 			};
-		}
-
-        static fromObject(object: any) {
-			var result = new textTool(1, object.x, object.y, object.width, object.height);
-			result.name = object.name;
-			result.text = object.text;
-			result.fontSize = object.fontSize;
-			result.fontType = object.fontType;
-			result.rotation = object.rotation;
-
-			return result;
 		}
 	}
 }

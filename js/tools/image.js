@@ -2,41 +2,66 @@ var bo;
 (function (bo) {
     var designerTools;
     (function (designerTools) {
-        var imageFactory = (function () {
-            function imageFactory() {
-                this.button = $("<div></div>").addClass("designerToolbarImage designerToolbarButton").attr("title", "Image").append($("<div></div>"));
+        var ImageFactory = (function () {
+            function ImageFactory() {
+                this.button = $("<button></button>").append($("<span></span>").addClass("glyphicon glyphicon-picture"));
             }
-            imageFactory.prototype.object = function (x, y, width, height) {
+            ImageFactory.prototype.object = function (x, y, width, height) {
+                this.button.removeClass("active");
                 return this.internalObject(x, y, width, height, null);
             };
-            imageFactory.prototype.internalObject = function (x, y, width, height, data) {
-                this.counter = this.counter || 1;
-                var result = new imageTool(this.counter++, x, y, width, height);
-                result.data = data;
-                return result;
+            ImageFactory.prototype.activateTool = function () {
+                this.button.addClass("active");
             };
-            imageFactory.prototype.activate = function (toolbar) {
+            ImageFactory.prototype.deactivateTool = function () {
+                this.button.removeClass("active");
+            };
+            ImageFactory.prototype.activate = function (toolbar) {
                 this.data = null;
                 var self = this;
                 // Open up a dialog to get the image
-                var dialog = $("<div></div>").prop("title", "Add Image");
+                var toolbarCopy = toolbar;
+                var dialogBody = $("<div></div>").addClass("modal-body");
+                var dialog = $("<div></div>").addClass("modal fade").prop("tabindex", -1).prop("role", "dialog")
+                    .append($("<div></div>").addClass("modal-dialog")
+                    .append($("<div></div>").addClass("modal-content")
+                    .append($("<div></div>").addClass("modal-header")
+                    .append($("<button></button>").prop("type", "button").addClass("close")
+                    .on("click", function () {
+                    dialog.modal("hide");
+                })
+                    .append($("<span></span>").html("&times;")))
+                    .append($("<h4></h4>").addClass("modal-title").html("Add Image")))
+                    .append(dialogBody)
+                    .append($("<div></div>").addClass("modal-footer")
+                    .append($("<button></button>").prop("type", "button").addClass("btn btn-default").html("Close")
+                    .on("click", function () {
+                    dialog.modal("hide");
+                }))
+                    .append($("<button></button>").prop("type", "button").addClass("btn btn-default").html("Add")
+                    .on("click", function () {
+                    toolbarCopy.designer.addObject(self.internalObject(0, 0, self.width, self.height, self.data));
+                    dialog.modal("hide");
+                })))));
+                var imageLeft = null;
+                var imageRight = null;
                 var imageFile = $("<input type=\"file\" />").css({ width: 400 })
                     .on("change", function () {
                     var input = imageFile[0];
                     if (!input.files[0]) {
-                        alert('Please select a file to insert.');
+                        alert("Please select a file to insert.");
                     }
                     else {
                         var file = input.files[0];
-                        var reader = new FileReader();
-                        var insertImg = imageLeft;
-                        var canvasResult = imageRight;
-                        reader.onloadend = function () {
-                            var canvas = canvasResult;
-                            var imgSelf = insertImg;
-                            insertImg.css({ "width": "auto", "height": "auto", "max-width": 200, "max-height": 200 });
+                        var reader_1 = new FileReader();
+                        var insertImg_1 = imageLeft;
+                        var canvasResult_1 = imageRight;
+                        reader_1.onloadend = function () {
+                            var canvas = canvasResult_1;
+                            var imgSelf = insertImg_1;
+                            insertImg_1.css({ "width": "auto", "height": "auto", "max-width": 200, "max-height": 200 });
                             canvas.css({ "width": "auto", "height": "auto" });
-                            insertImg[0].onload = function () {
+                            insertImg_1[0].onload = function () {
                                 var tCanvas = $("<canvas />");
                                 tCanvas[0].width = imgSelf[0].width;
                                 tCanvas[0].height = imgSelf[0].height;
@@ -71,43 +96,33 @@ var bo;
                                 self.data = imgData.data;
                                 ctx.putImageData(imgData, 0, 0);
                             };
-                            insertImg[0].src = reader.result;
+                            insertImg_1[0].src = reader_1.result;
                         };
-                        reader.readAsDataURL(file);
+                        reader_1.readAsDataURL(file);
                     }
-                }).appendTo(dialog);
+                }).appendTo(dialogBody);
                 var imageContainer = $("<div></div>").css({ "padding-top": "5px" });
-                var imageLeft = $("<img />").prop("src", "images/blank.gif").prop("border", "none").css({ float: "left", width: 200, height: 200, border: "1px solid #DDDDDD" }).appendTo(imageContainer);
-                var imageRight = $("<canvas />").css({ float: "right", width: 200, height: 200, border: "1px solid #DDDDDD" }).appendTo(imageContainer);
-                imageContainer.appendTo(dialog);
-                var Toolbar = toolbar;
-                dialog.dialog({
-                    modal: true,
-                    width: 470,
-                    height: 400,
-                    buttons: {
-                        "Insert": function () {
-                            // Insert the image onto the screen.
-                            Toolbar.designer.addObject(self.internalObject(0, 0, self.width, self.height, self.data));
-                            $(this).dialog("close");
-                        },
-                        "Cancel": function () {
-                            self.data = null;
-                            $(this).dialog("close");
-                        }
-                    }
-                })
-                    .on("dialogclose", { toolbar: toolbar }, function (event) {
-                    self.button.removeClass("designerToolbarButtonActive");
+                imageLeft = $("<img />").prop("src", "images/blank.png").prop("border", "none").css({ border: "1px solid #DDDDDD", float: "left", height: 200, width: 200 }).appendTo(imageContainer);
+                imageRight = $("<canvas />").css({ border: "1px solid #DDDDDD", float: "right", height: 200, width: 200 }).appendTo(imageContainer);
+                $("<br style='clear:both'></br>").appendTo(imageContainer);
+                imageContainer.appendTo(dialogBody);
+                dialog.modal("show")
+                    .on("hidden.bs.modal", { toolbar: toolbar }, function (event) {
                     event.data.toolbar.setTool(null);
                 });
             };
             ;
-            return imageFactory;
+            ImageFactory.prototype.internalObject = function (x, y, width, height, data) {
+                this.counter = this.counter || 1;
+                var result = new ImageTool(this.counter++, x, y, width, height);
+                result.data = data;
+                return result;
+            };
+            return ImageFactory;
         }());
-        designerTools.imageFactory = imageFactory;
-        var imageTool = (function () {
-            function imageTool(counter, x, y, width, height) {
+        designerTools.ImageFactory = ImageFactory;
+        var ImageTool = (function () {
+            function ImageTool(counter, x, y, width, height) {
                 this.uniqueID = counter;
                 this.name = "Image " + counter;
                 this.x = x;
@@ -120,27 +135,33 @@ var bo;
                 this.properties = [
                     {
                         name: "name", text: "name", readonly: false, type: "text",
-                        get: function (obj) { return obj.name; }, set: function (obj, value) { obj.name = value; }
+                        get: function (obj) { return obj.name; }, set: function (obj, value) { obj.name = value; },
                     },
                     {
                         name: "x", text: "x", readonly: false, type: "number",
-                        get: function (obj) { return obj.x; }, set: function (obj, value) { obj.x = value; }
+                        get: function (obj) { return obj.x; }, set: function (obj, value) { obj.x = value; },
                     },
                     {
                         name: "y", text: "y", readonly: false, type: "number",
-                        get: function (obj) { return obj.y; }, set: function (obj, value) { obj.y = value; }
+                        get: function (obj) { return obj.y; }, set: function (obj, value) { obj.y = value; },
                     },
                     {
                         name: "width", text: "width", readonly: true, type: "text",
-                        get: function (obj) { return obj.width; }, set: function (obj, value) { obj.width = value; }
+                        get: function (obj) { return obj.width; }, set: function (obj, value) { obj.width = value; },
                     },
                     {
                         name: "height", text: "height", readonly: true, type: "text",
-                        get: function (obj) { return obj.height; }, set: function (obj, value) { obj.height = value; }
-                    }
+                        get: function (obj) { return obj.height; }, set: function (obj, value) { obj.height = value; },
+                    },
                 ];
             }
-            imageTool.prototype.draw = function (context, width, height) {
+            ImageTool.fromObject = function (object) {
+                var result = new ImageTool(object.uniqueID, object.x, object.y, object.width, object.height);
+                result.data = object.data;
+                result.name = object.name;
+                return result;
+            };
+            ImageTool.prototype.draw = function (context, width, height) {
                 var ctxData = context.getImageData(0, 0, width, height);
                 for (var y = 0; y < this.height; y++) {
                     for (var x = 0; x < this.width; x++) {
@@ -157,27 +178,20 @@ var bo;
                 }
                 context.putImageData(ctxData, 0, 0);
             };
-            imageTool.prototype.drawActive = function (context) {
+            ImageTool.prototype.drawActive = function (context) {
                 context.dashedStroke((this.x - 5), (this.y - 5), (this.x) + (this.width) + 5, (this.y) + (this.height) + 5, [2, 2]);
             };
-            imageTool.prototype.hitTest = function (coords) {
+            ImageTool.prototype.hitTest = function (coords) {
                 return (coords.x >= (this.x) && coords.x <= (this.x) + (this.width) && coords.y >= (this.y) && coords.y <= (this.y) + (this.height));
             };
-            imageTool.prototype.toSerializable = function () {
+            ImageTool.prototype.toSerializable = function () {
                 return {
-                    type: "imageTool", uniqueID: this.uniqueID, name: this.name, x: this.x, y: this.y,
-                    width: this.width, height: this.height, data: this.data
+                    data: this.data, height: this.height, name: this.name, type: "imageTool", uniqueID: this.uniqueID, width: this.width, x: this.x, y: this.y,
                 };
             };
-            imageTool.fromObject = function (object) {
-                var result = new imageTool(object.uniqueID, object.x, object.y, object.width, object.height);
-                result.data = object.data;
-                result.name = object.name;
-                return result;
-            };
-            return imageTool;
+            return ImageTool;
         }());
-        designerTools.imageTool = imageTool;
+        designerTools.ImageTool = ImageTool;
     })(designerTools = bo.designerTools || (bo.designerTools = {}));
 })(bo || (bo = {}));
 //# sourceMappingURL=image.js.map

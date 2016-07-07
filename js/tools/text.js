@@ -2,21 +2,28 @@ var bo;
 (function (bo) {
     var designerTools;
     (function (designerTools) {
-        var point = bo.helpers.point;
-        var mathHelper = bo.helpers.mathHelper;
-        var textFactory = (function () {
-            function textFactory() {
-                this.button = $("<div></div>").addClass("designerToolbarText designerToolbarButton").attr("title", "Text").append($("<div></div>"));
+        var Point = bo.helpers.Point;
+        var MathHelper = bo.helpers.MathHelper;
+        var TextFactory = (function () {
+            function TextFactory() {
+                this.button = $("<button></button>").append($("<span></span>").addClass("glyphicon glyphicon-font"));
             }
-            textFactory.prototype.object = function (x, y, width, height) {
+            TextFactory.prototype.object = function (x, y, width, height) {
                 this.counter = this.counter || 1;
-                return new textTool(this.counter++, x, y, width, height);
+                return new TextTool(this.counter++, x, y, width, height);
             };
-            return textFactory;
+            TextFactory.prototype.activate = function (window) { };
+            TextFactory.prototype.activateTool = function () {
+                this.button.addClass("active");
+            };
+            TextFactory.prototype.deactivateTool = function () {
+                this.button.removeClass("active");
+            };
+            return TextFactory;
         }());
-        designerTools.textFactory = textFactory;
-        var textTool = (function () {
-            function textTool(counter, x, y, width, height) {
+        designerTools.TextFactory = TextFactory;
+        var TextTool = (function () {
+            function TextTool(counter, x, y, width, height) {
                 this.name = "Textbox " + counter;
                 this.text = this.name;
                 this.x = x;
@@ -54,7 +61,16 @@ var bo;
                     }
                 ];
             }
-            textTool.prototype.getFontHeight = function () {
+            TextTool.fromObject = function (object) {
+                var result = new TextTool(1, object.x, object.y, object.width, object.height);
+                result.name = object.name;
+                result.text = object.text;
+                result.fontSize = object.fontSize;
+                result.fontType = object.fontType;
+                result.rotation = object.rotation;
+                return result;
+            };
+            TextTool.prototype.getFontHeight = function () {
                 var textMeasure = $("<div></div>").css({
                     "font-size": this.fontSize + "px",
                     "font-family": this.fontType,
@@ -64,7 +80,7 @@ var bo;
                 textMeasure.remove();
                 return height;
             };
-            textTool.prototype.draw = function (context, width, height) {
+            TextTool.prototype.draw = function (context, width, height) {
                 context.font = this.fontSize + "px " + this.fontType;
                 var oColor = context.fillStyle;
                 context.fillStyle = "white";
@@ -80,43 +96,34 @@ var bo;
                 context.globalCompositeOperation = "source-over";
                 context.fillStyle = oColor;
             };
-            textTool.prototype.drawActive = function (context) {
+            TextTool.prototype.drawActive = function (context) {
                 context.save();
                 context.translate(this.x, this.y + this.height / 2);
                 context.rotate((this.rotation * Math.PI) / 180);
                 context.dashedStroke(-5, -5 - (this.height / 2), this.width + 5, (this.height * 0.9) - (this.height / 2) + 5, [2, 2]);
                 context.restore();
             };
-            textTool.prototype.hitTest = function (coords) {
+            TextTool.prototype.hitTest = function (coords) {
                 var originX = this.x;
                 var originY = this.y + this.height / 2;
                 var rotation = this.rotation;
-                var rotatedTopLeft = mathHelper.rotate(new point(originX, originY), new point(this.x, this.y), rotation);
-                var rotatedBottomLeft = mathHelper.rotate(new point(originX, originY), new point(this.x, this.y + this.height), rotation);
-                var rotatedTopRight = mathHelper.rotate(new point(originX, originY), new point(this.x + this.width, this.y), rotation);
-                var rotatedBottomRight = mathHelper.rotate(new point(originX, originY), new point(this.x + this.width, this.y + this.height), rotation);
+                var rotatedTopLeft = MathHelper.rotate(new Point(originX, originY), new Point(this.x, this.y), rotation);
+                var rotatedBottomLeft = MathHelper.rotate(new Point(originX, originY), new Point(this.x, this.y + this.height), rotation);
+                var rotatedTopRight = MathHelper.rotate(new Point(originX, originY), new Point(this.x + this.width, this.y), rotation);
+                var rotatedBottomRight = MathHelper.rotate(new Point(originX, originY), new Point(this.x + this.width, this.y + this.height), rotation);
                 var area = [rotatedTopLeft, rotatedBottomLeft, rotatedBottomRight, rotatedTopRight];
-                var hitTest = bo.helpers.mathHelper.isPointWithinPolygon(new point(coords.x, coords.y), area);
+                var hitTest = bo.helpers.MathHelper.isPointWithinPolygon(new Point(coords.x, coords.y), area);
                 return hitTest;
             };
-            textTool.prototype.toSerializable = function () {
+            TextTool.prototype.toSerializable = function () {
                 return {
-                    type: "textTool", name: this.name, text: this.text, x: this.x, y: this.y, fontSize: this.fontSize,
-                    fontType: this.fontType, width: this.width, height: this.height, rotation: this.rotation
+                    fontSize: this.fontSize, fontType: this.fontType, height: this.height, name: this.name, rotation: this.rotation,
+                    text: this.text, type: "textTool", width: this.width, x: this.x, y: this.y,
                 };
             };
-            textTool.fromObject = function (object) {
-                var result = new textTool(1, object.x, object.y, object.width, object.height);
-                result.name = object.name;
-                result.text = object.text;
-                result.fontSize = object.fontSize;
-                result.fontType = object.fontType;
-                result.rotation = object.rotation;
-                return result;
-            };
-            return textTool;
+            return TextTool;
         }());
-        designerTools.textTool = textTool;
+        designerTools.TextTool = TextTool;
     })(designerTools = bo.designerTools || (bo.designerTools = {}));
 })(bo || (bo = {}));
 //# sourceMappingURL=text.js.map

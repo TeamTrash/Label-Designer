@@ -1,63 +1,43 @@
 var bo;
 (function (bo) {
-    var toolsWindow = (function () {
-        function toolsWindow(designer, canvas) {
+    var ToolsWindow = (function () {
+        function ToolsWindow(designer, container) {
             this.designer = designer;
-            this.canvas = canvas;
-            this.canvasElement = $(canvas);
-            this.boundingBox = null;
-            this.toolsWindow = this.buildToolsWindow(canvas, this.canvasElement);
-            this.toolsViewContainer = this.buildToolsViewContainer(this.toolsWindow);
-            this.buttonView = this.buildButtomView(this.toolsViewContainer);
-            this.updatePosition(0);
+            this.container = container;
+            this.buttonView = this.buildButtomView(container);
         }
-        toolsWindow.prototype.setTool = function (controller) {
-            if (this.designer.newObjectController == controller) {
+        ToolsWindow.prototype.setTool = function (controller) {
+            if (this.designer.newObjectController === controller) {
                 this.designer.setNewObject(null);
-                controller.button.removeClass("designerToolbarButtonActive");
+                controller.deactivateTool();
             }
             else {
-                if (this.designer.newObjectController)
-                    this.designer.newObjectController.button.removeClass("designerToolbarButtonActive");
+                if (this.designer.newObjectController) {
+                    this.designer.newObjectController.deactivateTool();
+                }
                 this.designer.setNewObject(controller);
                 if (controller) {
-                    controller.button.addClass("designerToolbarButtonActive");
-                    if (controller.activate)
+                    controller.activateTool();
+                    if (controller.activate) {
                         controller.activate(this);
+                    }
                 }
             }
         };
         ;
-        toolsWindow.prototype.addTool = function (controller) {
+        ToolsWindow.prototype.addTool = function (controller) {
             var self = this;
             controller.button.on("click", { tool: controller }, function (event) {
                 self.setTool(event.data.tool);
             });
             this.buttonView.append(controller.button);
         };
-        toolsWindow.prototype.updatePosition = function (xchange) {
-            this.boundingBox = this.toolsWindow[0].getBoundingClientRect();
+        ToolsWindow.prototype.update = function (activeElement) { };
+        ToolsWindow.prototype.buildButtomView = function (container) {
+            return $("<div></div>").appendTo(container);
         };
-        toolsWindow.prototype.update = function (activeElement) { };
-        toolsWindow.prototype.buildToolsWindow = function (canvas, canvasElement) {
-            return $('<div></div>')
-                .addClass("designerUtilityToolbar")
-                .css({
-                "left": canvas.getBoundingClientRect().left - 90,
-                "top": canvas.getBoundingClientRect().top
-            })
-                .insertAfter(this.canvasElement);
-        };
-        toolsWindow.prototype.buildToolsViewContainer = function (toolsWindow) {
-            return $('<div></div>')
-                .addClass("designerToolbarContent")
-                .appendTo(toolsWindow);
-        };
-        toolsWindow.prototype.buildButtomView = function (toolsViewContainer) {
-            return $('<div></div>').appendTo(toolsViewContainer);
-        };
-        return toolsWindow;
+        return ToolsWindow;
     }());
-    bo.toolsWindow = toolsWindow;
+    bo.ToolsWindow = ToolsWindow;
 })(bo || (bo = {}));
 //# sourceMappingURL=designer_toolbar.js.map

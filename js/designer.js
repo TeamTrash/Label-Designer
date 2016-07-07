@@ -13,16 +13,15 @@ var bo;
         } while (currentElement = currentElement.offsetParent);
         canvasX = event.clientX - totalOffsetX;
         canvasY = event.clientY - totalOffsetY;
-        return new bo.helpers.point(canvasX, canvasY);
+        return new bo.helpers.Point(canvasX, canvasY);
     };
     // From http://stackoverflow.com/a/4577326/697477
     var CP = window.CanvasRenderingContext2D && CanvasRenderingContext2D.prototype;
     if (CP && CP.lineTo) {
         CP.dashedLine = function (x, y, x2, y2, dashArray) {
-            if (!dashArray)
+            if (!dashArray) {
                 dashArray = [10, 5];
-            if (dashLength == 0)
-                dashLength = 0.001; // Hack for Safari
+            }
             var dashCount = dashArray.length;
             this.moveTo(x, y);
             var dx = (x2 - x), dy = (y2 - y);
@@ -31,14 +30,16 @@ var bo;
             var dashIndex = 0, draw = true;
             while (distRemaining >= 0.1) {
                 var dashLength = dashArray[dashIndex++ % dashCount];
-                if (dashLength > distRemaining)
+                if (dashLength > distRemaining) {
                     dashLength = distRemaining;
+                }
                 var xStep = Math.sqrt(dashLength * dashLength / (1 + slope * slope));
-                if (dx < 0)
+                if (dx < 0) {
                     xStep = -xStep;
+                }
                 x += xStep;
                 y += slope * xStep;
-                this[draw ? 'lineTo' : 'moveTo'](x, y);
+                this[draw ? "lineTo" : "moveTo"](x, y);
                 distRemaining -= dashLength;
                 draw = !draw;
             }
@@ -54,67 +55,64 @@ var bo;
             this.stroke();
         };
     }
-    var labelDesigner = (function () {
-        function labelDesigner(canvasid, labelWidth, labelHeight) {
+    var LabelDesigner = (function () {
+        function LabelDesigner(canvasid, labelWidth, labelHeight) {
+            this.onUpdating = new bo.helpers.LiteEvent();
             this.canvas = document.getElementById(canvasid);
             this.canvasElement = $(this.canvas);
             this.labelWidth = labelWidth * this.dpi;
             this.labelHeight = labelHeight * this.dpi;
-            this.propertyInspector = new bo.propertyInspector(this, this.canvas);
-            this.toolbar = new bo.toolsWindow(this, this.canvas);
-            this.labelSizeInspector = new bo.labelSizeInspector(this, this.canvas);
-            this.labelInspector = new bo.labelInspector(this, this.canvas);
             this.dpi = 200;
             this.drawingContext = this.canvas.getContext("2d");
             this.elements = [];
             this.currentLayer = 0;
             this.activeElement = null;
-            this.activeTool = null;
             this.labelX = this.canvas.width / 2 - this.labelWidth / 2;
             this.labelY = 5;
-            this.dragStartPosition = new bo.helpers.point(0, 0);
+            this.dragStartPosition = new bo.helpers.Point(0, 0);
             this.dragStartTime = 0;
-            this.dragLastPosition = new bo.helpers.point(0, 0);
-            this.dragElementOffset = new bo.helpers.point(0, 0);
+            this.dragLastPosition = new bo.helpers.Point(0, 0);
+            this.dragElementOffset = new bo.helpers.Point(0, 0);
             this.dragAction = 0;
             this.dragging = false;
             this.attachCanvasEvents();
             this.updateLabelSize(labelWidth, labelHeight);
             this.updateCanvas();
         }
-        labelDesigner.prototype.updateLabelSize = function (width, height) {
-            var xchange = (width * this.dpi + 10) - parseInt(this.canvasElement.prop("width"));
+        Object.defineProperty(LabelDesigner.prototype, "updating", {
+            get: function () { return this.onUpdating; },
+            enumerable: true,
+            configurable: true
+        });
+        LabelDesigner.prototype.updateLabelSize = function (width, height) {
             this.labelWidth = width * this.dpi;
             this.labelHeight = height * this.dpi;
             this.canvasElement.prop("width", this.labelWidth + 10).prop("height", this.labelHeight + 10);
             this.labelX = this.canvas.width / 2 - this.labelWidth / 2;
             this.labelY = 5;
-            this.propertyInspector.updatePosition(xchange);
-            this.labelSizeInspector.updatePosition(xchange);
-            this.labelInspector.updatePosition(xchange);
             this.updateCanvas();
         };
-        labelDesigner.prototype.addObject = function (tool) {
+        LabelDesigner.prototype.addObject = function (tool) {
             this.elements[this.currentLayer++] = tool;
             this.activeElement = this.elements[this.currentLayer - 1];
             this.updateCanvas();
         };
-        labelDesigner.prototype.reset = function () {
+        LabelDesigner.prototype.reset = function () {
             this.elements = [];
             this.currentLayer = 1;
             this.activeElement = null;
             this.updateCanvas();
         };
-        labelDesigner.prototype.saveToJson = function () {
+        LabelDesigner.prototype.saveToJson = function () {
             var elements = this.elements
                 .filter(function (value) { return value != null; })
                 .map(function (value) {
                 return value != null ? value.toSerializable() : null;
             });
-            var saveModel = { height: this.labelHeight, width: this.labelWidth, dpi: this.dpi, items: elements };
+            var saveModel = { dpi: this.dpi, height: this.labelHeight, items: elements, width: this.labelWidth };
             return JSON.stringify(saveModel);
         };
-        labelDesigner.prototype.loadFromJson = function (json) {
+        LabelDesigner.prototype.loadFromJson = function (json) {
             var model = JSON.parse(json);
             var elements = model.items.map(function (item) {
                 return bo.designerTools.typeMapping[item.type].fromObject(item);
@@ -127,19 +125,49 @@ var bo;
                 this.addObject(element);
             }
         };
-        labelDesigner.prototype.deleteActiveElement = function () {
+        LabelDesigner.prototype.updateCanvas = function () {
+            this.onUpdating.trigger(this.activeElement);
+            this.drawingContext.fillStyle = "#FFFFFF";
+            this.drawingContext.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            // Draw the boundary.
+            this.drawingContext.strokeStyle = "#FF0000";
+            this.drawingContext.lineWidth = 1;
+            this.drawingContext.strokeRect(this.labelX, this.labelY, this.labelWidth, this.labelHeight);
+            this.drawingContext.strokeStyle = "#000000";
+            this.drawingContext.fillStyle = "#000000";
+            for (var i = 0; i < this.currentLayer; i++) {
+                if (this.elements[i]) {
+                    this.elements[i].draw(this.drawingContext, this.canvas.width, this.canvas.height);
+                }
+            }
+            this.drawingContext.strokeStyle = "#FF0000";
+            this.drawingContext.lineCap = "butt";
+            this.drawingContext.lineWidth = 2;
+            if (this.activeElement) {
+                this.activeElement.drawActive(this.drawingContext);
+            }
+        };
+        LabelDesigner.prototype.setNewObject = function (controller) {
+            if (controller) {
+                this.newObjectController = controller;
+            }
+            else {
+                this.newObjectController = null;
+            }
+        };
+        LabelDesigner.prototype.deleteActiveElement = function () {
             if (this.activeElement) {
                 for (var i = 0; i < this.currentLayer; i++) {
-                    if (this.elements[i] && this.elements[i] == this.activeElement) {
+                    if (this.elements[i] && this.elements[i] === this.activeElement) {
                         this.elements[i] = null;
                         this.activeElement = null;
                     }
                 }
             }
         };
-        labelDesigner.prototype.setActiveElement = function () {
+        LabelDesigner.prototype.setActiveElement = function () {
             var coordinates = this.canvas.relativeMouse(event);
-            if (!this.activeElement || this.getHandle(coordinates) == 0) {
+            if (!this.activeElement || this.getHandle(coordinates) === 0) {
                 this.activeElement = null;
                 for (var i = this.currentLayer - 1; i >= 0; i--) {
                     if (this.elements[i] && this.elements[i].hitTest(coordinates)) {
@@ -158,42 +186,52 @@ var bo;
          *          4 left                   5 right
          *          6 bottom left  7 bottom  8 bottom right
          */
-        labelDesigner.prototype.setActiveHandle = function (coords) {
+        LabelDesigner.prototype.setActiveHandle = function (coords) {
             this.dragAction = this.getHandle(coords);
         };
-        labelDesigner.prototype.getHandle = function (coords) {
+        LabelDesigner.prototype.getHandle = function (coords) {
             var result = 0;
-            if (this.activeElement.canResize !== true)
+            if (this.activeElement.canResize !== true) {
                 return result;
+            }
+            ;
             var leftEdge = coords.x > this.activeElement.x - 5 && coords.x < this.activeElement.x + 5;
             var rightEdge = coords.x > this.activeElement.x + this.activeElement.width - 5 && coords.x < this.activeElement.x + this.activeElement.width + 5;
             var topEdge = coords.y > this.activeElement.y - 5 && coords.y < this.activeElement.y + 5;
             var bottomEdge = coords.y > this.activeElement.y + this.activeElement.height - 5 && coords.y < this.activeElement.y + this.activeElement.height + 5;
             var verticalHit = coords.y > this.activeElement.y && coords.y < this.activeElement.y + this.activeElement.height;
             var horizontalHit = coords.x > this.activeElement.x && coords.x < this.activeElement.x + this.activeElement.width;
-            if (leftEdge && topEdge)
+            if (leftEdge && topEdge) {
                 result = 1;
-            else if (rightEdge && topEdge)
+            }
+            else if (rightEdge && topEdge) {
                 result = 3;
-            else if (leftEdge && bottomEdge)
+            }
+            else if (leftEdge && bottomEdge) {
                 result = 6;
-            else if (rightEdge && bottomEdge)
+            }
+            else if (rightEdge && bottomEdge) {
                 result = 8;
-            else if (topEdge && horizontalHit)
+            }
+            else if (topEdge && horizontalHit) {
                 result = 2;
-            else if (leftEdge && verticalHit)
+            }
+            else if (leftEdge && verticalHit) {
                 result = 4;
-            else if (rightEdge && verticalHit)
+            }
+            else if (rightEdge && verticalHit) {
                 result = 5;
-            else if (bottomEdge && horizontalHit)
+            }
+            else if (bottomEdge && horizontalHit) {
                 result = 7;
+            }
             return result;
         };
-        labelDesigner.prototype.move = function (point) {
+        LabelDesigner.prototype.move = function (point) {
             this.activeElement.x = point.x;
             this.activeElement.y = point.y;
         };
-        labelDesigner.prototype.resize = function (xchange, ychange) {
+        LabelDesigner.prototype.resize = function (xchange, ychange) {
             switch (this.dragAction) {
                 case 1:
                     this.activeElement.x += xchange;
@@ -230,11 +268,11 @@ var bo;
                     this.activeElement.height = (this.activeElement.height + ychange);
                     break;
             }
-            if (this.activeElement.width == 0) {
+            if (this.activeElement.width === 0) {
                 this.activeElement.width = (-1);
                 this.activeElement.x += 1;
             }
-            if (this.activeElement.height == 0) {
+            if (this.activeElement.height === 0) {
                 this.activeElement.height = (-1);
                 this.activeElement.y += 1;
             }
@@ -249,7 +287,7 @@ var bo;
                 this.swapActionVertical();
             }
         };
-        labelDesigner.prototype.swapActionVertical = function () {
+        LabelDesigner.prototype.swapActionVertical = function () {
             switch (this.dragAction) {
                 case 1:
                     this.dragAction = 6;
@@ -271,7 +309,7 @@ var bo;
                     break;
             }
         };
-        labelDesigner.prototype.swapActionHorizontal = function () {
+        LabelDesigner.prototype.swapActionHorizontal = function () {
             switch (this.dragAction) {
                 case 1:
                     this.dragAction = 3;
@@ -293,40 +331,7 @@ var bo;
                     break;
             }
         };
-        labelDesigner.prototype.update = function () {
-            this.propertyInspector.update(this.activeElement);
-            this.labelInspector.update(this.activeElement);
-        };
-        labelDesigner.prototype.updateCanvas = function () {
-            this.update();
-            this.drawingContext.fillStyle = "#FFFFFF";
-            this.drawingContext.fillRect(0, 0, this.canvas.width, this.canvas.height);
-            // Draw the boundary.
-            this.drawingContext.strokeStyle = "#FF0000";
-            this.drawingContext.lineWidth = 1;
-            this.drawingContext.strokeRect(this.labelX, this.labelY, this.labelWidth, this.labelHeight);
-            this.drawingContext.strokeStyle = "#000000";
-            this.drawingContext.fillStyle = "#000000";
-            for (var i = 0; i < this.currentLayer; i++) {
-                if (this.elements[i]) {
-                    this.elements[i].draw(this.drawingContext, this.canvas.width, this.canvas.height);
-                }
-            }
-            this.drawingContext.strokeStyle = "#FF0000";
-            this.drawingContext.lineCap = 'butt';
-            this.drawingContext.lineWidth = 2;
-            if (this.activeElement)
-                this.activeElement.drawActive(this.drawingContext);
-        };
-        labelDesigner.prototype.setNewObject = function (controller) {
-            if (controller) {
-                this.newObjectController = controller;
-            }
-            else {
-                this.newObjectController = null;
-            }
-        };
-        labelDesigner.prototype.attachCanvasEvents = function () {
+        LabelDesigner.prototype.attachCanvasEvents = function () {
             var self = this;
             this.canvasElement.on("click", function () {
                 self.setActiveElement();
@@ -338,14 +343,13 @@ var bo;
                     self.elements[self.currentLayer++] = self.newObjectController.object(self.dragStartPosition.x, self.dragStartPosition.y, 1, 1);
                     self.dragAction = 8;
                     self.activeElement = self.elements[self.currentLayer - 1];
-                    self.newObjectController.button.removeClass("designerToolbarButtonActive");
                     self.newObjectController = null;
                 }
                 else {
                     self.dragAction = 0;
                     self.setActiveElement();
                     if (self.activeElement) {
-                        self.dragElementOffset = new bo.helpers.point(self.activeElement.x - self.dragStartPosition.x, self.activeElement.y - self.dragStartPosition.y);
+                        self.dragElementOffset = new bo.helpers.Point(self.activeElement.x - self.dragStartPosition.x, self.activeElement.y - self.dragStartPosition.y);
                         self.setActiveHandle(self.dragStartPosition);
                     }
                 }
@@ -360,10 +364,9 @@ var bo;
                 .on("mousemove", function () {
                 if (self.dragging && self.activeElement) {
                     var coords = self.canvas.relativeMouse(event);
-                    //console.log(self.dragAction);
                     switch (self.dragAction) {
                         case 0:
-                            self.move(new bo.helpers.point(coords.x + self.dragElementOffset.x, coords.y + self.dragElementOffset.y));
+                            self.move(new bo.helpers.Point(coords.x + self.dragElementOffset.x, coords.y + self.dragElementOffset.y));
                             break;
                         default:
                             self.resize(coords.x - self.dragLastPosition.x, coords.y - self.dragLastPosition.y);
@@ -378,9 +381,9 @@ var bo;
                 else if (self.activeElement) {
                     var coords = self.canvas.relativeMouse(event);
                     // If cursor is within range of edge, show resize handles
-                    var location = self.getHandle(coords);
+                    var location_1 = self.getHandle(coords);
                     var style = "default";
-                    switch (location) {
+                    switch (location_1) {
                         case 0:
                             style = "default";
                             break;
@@ -413,27 +416,30 @@ var bo;
                 }
             })
                 .on("keydown", function (event) {
-                //event = event || window.event;
                 var handled = false;
                 switch (event.keyCode) {
                     case 37:
-                        if (self.activeElement)
+                        if (self.activeElement) {
                             self.activeElement.x -= 1;
+                        }
                         handled = true;
                         break;
                     case 38:
-                        if (self.activeElement)
+                        if (self.activeElement) {
                             self.activeElement.y -= 1;
+                        }
                         handled = true;
                         break;
                     case 39:
-                        if (self.activeElement)
+                        if (self.activeElement) {
                             self.activeElement.x += 1;
+                        }
                         handled = true;
                         break;
                     case 40:
-                        if (self.activeElement)
+                        if (self.activeElement) {
                             self.activeElement.y += 1;
+                        }
                         handled = true;
                         break;
                     case 46:
@@ -450,8 +456,8 @@ var bo;
                 }
             });
         };
-        return labelDesigner;
+        return LabelDesigner;
     }());
-    bo.labelDesigner = labelDesigner;
+    bo.LabelDesigner = LabelDesigner;
 })(bo || (bo = {}));
 //# sourceMappingURL=designer.js.map

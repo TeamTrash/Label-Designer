@@ -1,5 +1,5 @@
 interface HTMLCanvasElement {
-	relativeMouse(event: any): bo.helpers.point;
+	relativeMouse(event: any): bo.helpers.Point;
 }
 interface Window {
 	CanvasRenderingContext2D: any;
@@ -11,60 +11,61 @@ interface CanvasRenderingContext2D {
 }
 
 module bo {
-	import tool = bo.designerTools.tool;
-	import toolFactory = bo.designerTools.toolFactory;
+	import Tool = bo.designerTools.Tool;
+	import ToolFactory = bo.designerTools.ToolFactory;
 
 	// http://stackoverflow.com/a/5932203/697477
 	HTMLCanvasElement.prototype.relativeMouse = function (event) {
-		var totalOffsetX = 0;
-		var totalOffsetY = 0;
-		var canvasX = 0;
-		var canvasY = 0;
-		var currentElement = this;
+		let totalOffsetX = 0;
+		let totalOffsetY = 0;
+		let canvasX = 0;
+		let canvasY = 0;
+		let currentElement = this;
 
 		do {
 			totalOffsetX += currentElement.offsetLeft - currentElement.scrollLeft;
 			totalOffsetY += currentElement.offsetTop - currentElement.scrollTop;
 		}
-		while (currentElement = currentElement.offsetParent)
+		while (currentElement = currentElement.offsetParent);
 
 		canvasX = event.clientX - totalOffsetX;
 		canvasY = event.clientY - totalOffsetY;
 
-		return new bo.helpers.point(canvasX, canvasY);
-	}
+		return new bo.helpers.Point(canvasX, canvasY);
+	};
 
 	// From http://stackoverflow.com/a/4577326/697477
-	var CP = window.CanvasRenderingContext2D && CanvasRenderingContext2D.prototype;
+	let CP = window.CanvasRenderingContext2D && CanvasRenderingContext2D.prototype;
 	if (CP && CP.lineTo) {
 		CP.dashedLine = function (x, y, x2, y2, dashArray) {
-			if (!dashArray)
+			if (!dashArray) {
 				dashArray = [10, 5];
-			if (dashLength == 0)
-				dashLength = 0.001; // Hack for Safari
-			var dashCount = dashArray.length;
+			}
+			let dashCount = dashArray.length;
 			this.moveTo(x, y);
-			var dx = (x2 - x), dy = (y2 - y);
-			var slope = dx ? dy / dx : 1e15;
-			var distRemaining = Math.sqrt(dx * dx + dy * dy);
-			var dashIndex = 0, draw = true;
+			let dx = (x2 - x), dy = (y2 - y);
+			let slope = dx ? dy / dx : 1e15;
+			let distRemaining = Math.sqrt(dx * dx + dy * dy);
+			let dashIndex = 0, draw = true;
 			while (distRemaining >= 0.1) {
-				var dashLength = dashArray[dashIndex++ % dashCount];
-				if (dashLength > distRemaining)
+				let dashLength = dashArray[dashIndex++ % dashCount];
+				if (dashLength > distRemaining) {
 					dashLength = distRemaining;
-				var xStep = Math.sqrt(dashLength * dashLength / (1 + slope * slope));
-				if (dx < 0)
+				}
+				let xStep = Math.sqrt(dashLength * dashLength / (1 + slope * slope));
+				if (dx < 0) {
 					xStep = -xStep;
-				x += xStep
+				}
+				x += xStep;
 				y += slope * xStep;
-				this[draw ? 'lineTo' : 'moveTo'](x, y);
+				this[draw ? "lineTo" : "moveTo"](x, y);
 				distRemaining -= dashLength;
 				draw = !draw;
 			}
 
 			// Ensure that the last segment is closed for proper stroking
 			this.moveTo(0, 0);
-		}
+		};
 
 		CP.dashedStroke = function (x, y, x2, y2, dashArray) {
 			this.beginPath();
@@ -73,35 +74,52 @@ module bo {
 			this.dashedLine(x2, y2, x, y2, dashArray);
 			this.dashedLine(x, y, x, y2, dashArray);
 			this.stroke();
-		}
+		};
 	}
 
-	export class labelDesigner {
+	export class LabelDesigner {
+		public dpi: number;
+		public labelWidth: number;
+		public labelHeight: number;
+		public elements: Array<Tool>;
+		public activeElement: Tool;
+		public toolbar: bo.ToolsWindow;
+		public newObjectController: ToolFactory;
+
+		private canvas: HTMLCanvasElement;
+		private canvasElement: JQuery;
+		private onUpdating = new bo.helpers.LiteEvent<bo.designerTools.Tool>();
+		private drawingContext: CanvasRenderingContext2D;
+		private currentLayer: number;
+		private labelX: number;
+		private labelY: number;
+		private dragStartPosition: bo.helpers.Point;
+		private dragStartTime: number;
+		private dragLastPosition: bo.helpers.Point;
+		private dragElementOffset: bo.helpers.Point;
+		private dragAction: number;
+		private dragging: boolean;
+
 		constructor(canvasid: string, labelWidth: number, labelHeight: number) {
 			this.canvas = document.getElementById(canvasid) as HTMLCanvasElement;
 			this.canvasElement = $(this.canvas);
 
 			this.labelWidth = labelWidth * this.dpi;
 			this.labelHeight = labelHeight * this.dpi;
-			this.propertyInspector = new bo.propertyInspector(this, this.canvas);
-			this.toolbar = new bo.toolsWindow(this, this.canvas);
-			this.labelSizeInspector = new bo.labelSizeInspector(this, this.canvas);
-			this.labelInspector = new bo.labelInspector(this, this.canvas);
 			this.dpi = 200;
 
 			this.drawingContext = this.canvas.getContext("2d");
 			this.elements = [];
 			this.currentLayer = 0;
 			this.activeElement = null;
-			this.activeTool = null;
 
 			this.labelX = this.canvas.width / 2 - this.labelWidth / 2;
 			this.labelY = 5;
 
-			this.dragStartPosition = new bo.helpers.point(0, 0);
+			this.dragStartPosition = new bo.helpers.Point(0, 0);
 			this.dragStartTime = 0;
-			this.dragLastPosition = new bo.helpers.point(0, 0);
-			this.dragElementOffset = new bo.helpers.point(0, 0)
+			this.dragLastPosition = new bo.helpers.Point(0, 0);
+			this.dragElementOffset = new bo.helpers.Point(0, 0);
 			this.dragAction = 0;
 			this.dragging = false;
 
@@ -110,76 +128,46 @@ module bo {
 			this.updateCanvas();
 		}
 
-		private canvas: HTMLCanvasElement;
-		private canvasElement: JQuery;
+		get updating(): bo.helpers.ILiteEvent<Tool> { return this.onUpdating; }
 
-		dpi: number;
-		labelWidth: number;
-		labelHeight: number;
-		elements: Array<tool>;
-		activeElement: tool;
-
-		private propertyInspector: bo.propertyInspector;
-		private toolbar: bo.toolsWindow;
-		private labelSizeInspector: bo.labelSizeInspector;
-		private labelInspector: bo.labelInspector;
-
-		private drawingContext: CanvasRenderingContext2D;
-		private currentLayer: number;
-		private activeTool: any;
-		private newObjectController: toolFactory;
-
-		private labelX: number;
-		private labelY: number;
-		private dragStartPosition: bo.helpers.point;
-		private dragStartTime: number;
-		private dragLastPosition: bo.helpers.point;
-		private dragElementOffset: bo.helpers.point;
-		private dragAction: number;
-		private dragging: boolean;
-
-		updateLabelSize(width: number, height: number): void {
-			var xchange = (width * this.dpi + 10) - parseInt(this.canvasElement.prop("width"));
+		public updateLabelSize(width: number, height: number): void {
 			this.labelWidth = width * this.dpi;
 			this.labelHeight = height * this.dpi;
 			this.canvasElement.prop("width", this.labelWidth + 10).prop("height", this.labelHeight + 10);
 			this.labelX = this.canvas.width / 2 - this.labelWidth / 2;
 			this.labelY = 5;
-			this.propertyInspector.updatePosition(xchange);
-			this.labelSizeInspector.updatePosition(xchange);
-			this.labelInspector.updatePosition(xchange);
 			this.updateCanvas();
 		}
 
 
-		addObject(tool: tool): void {
+		public addObject(tool: Tool): void {
 			this.elements[this.currentLayer++] = tool;
 			this.activeElement = this.elements[this.currentLayer - 1];
 			this.updateCanvas();
 		}
 
-		reset(): void {
+		public reset(): void {
 			this.elements = [];
 			this.currentLayer = 1;
 			this.activeElement = null;
 			this.updateCanvas();
 		}
 
-		saveToJson(): string {
-			var elements = this.elements
-				.filter((value: bo.designerTools.tool) => { return value != null })
-				.map((value: bo.designerTools.tool) => {
+		public saveToJson(): string {
+			let elements = this.elements
+				.filter((value: Tool) => { return value != null; })
+				.map((value: Tool) => {
 					return value != null ? value.toSerializable() : null;
 				});
 
-			var saveModel = { height: this.labelHeight, width: this.labelWidth, dpi: this.dpi, items: elements }
+			let saveModel = { dpi: this.dpi, height: this.labelHeight, items: elements, width: this.labelWidth };
 
 			return JSON.stringify(saveModel);
 		}
 
-		loadFromJson(json: string): void {
-			var model = JSON.parse(json);
-			var elements = model.items.map((item: any) => {
+		public loadFromJson(json: string): void {
+			let model = JSON.parse(json);
+			let elements = model.items.map((item: any) => {
 				return bo.designerTools.typeMapping[item.type].fromObject(item);
 			});
 
@@ -187,15 +175,50 @@ module bo {
 			this.dpi = model.dpi;
 			this.updateLabelSize(model.width / model.dpi, model.height / model.dpi);
 
-			for (var element of elements) {
+			for (let element of elements) {
 				this.addObject(element);
+			}
+		}
+
+		public updateCanvas(): void {
+			this.onUpdating.trigger(this.activeElement);
+
+			this.drawingContext.fillStyle = "#FFFFFF";
+			this.drawingContext.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+			// Draw the boundary.
+			this.drawingContext.strokeStyle = "#FF0000";
+			this.drawingContext.lineWidth = 1;
+			this.drawingContext.strokeRect(this.labelX, this.labelY, this.labelWidth, this.labelHeight);
+			this.drawingContext.strokeStyle = "#000000";
+			this.drawingContext.fillStyle = "#000000";
+
+			for (let i = 0; i < this.currentLayer; i++) {
+				if (this.elements[i]) {
+					this.elements[i].draw(this.drawingContext, this.canvas.width, this.canvas.height);
+				}
+			}
+
+			this.drawingContext.strokeStyle = "#FF0000";
+			this.drawingContext.lineCap = "butt";
+			this.drawingContext.lineWidth = 2;
+			if (this.activeElement) {
+				this.activeElement.drawActive(this.drawingContext);
+			}
+		}
+
+		public setNewObject(controller: ToolFactory): void {
+			if (controller) {
+				this.newObjectController = controller;
+			} else {
+				this.newObjectController = null;
 			}
 		}
 
 		private deleteActiveElement(): void {
 			if (this.activeElement) {
-				for (var i = 0; i < this.currentLayer; i++) {
-					if (this.elements[i] && this.elements[i] == this.activeElement) {
+				for (let i = 0; i < this.currentLayer; i++) {
+					if (this.elements[i] && this.elements[i] === this.activeElement) {
 						this.elements[i] = null;
 						this.activeElement = null;
 					}
@@ -204,10 +227,10 @@ module bo {
 		}
 
 		private setActiveElement() {
-			var coordinates = this.canvas.relativeMouse(event);
-			if (!this.activeElement || this.getHandle(coordinates) == 0) {
+			let coordinates = this.canvas.relativeMouse(event);
+			if (!this.activeElement || this.getHandle(coordinates) === 0) {
 				this.activeElement = null;
-				for (var i = this.currentLayer - 1; i >= 0; i--) {
+				for (let i = this.currentLayer - 1; i >= 0; i--) {
 					if (this.elements[i] && this.elements[i].hitTest(coordinates)) {
 						this.activeElement = this.elements[i];
 						break;
@@ -226,44 +249,45 @@ module bo {
 		 *          4 left                   5 right
 		 *          6 bottom left  7 bottom  8 bottom right
 		 */
-		private setActiveHandle(coords: bo.helpers.point): void {
+		private setActiveHandle(coords: bo.helpers.Point): void {
 			this.dragAction = this.getHandle(coords);
 		}
 
-		private getHandle(coords: bo.helpers.point): number {
-			var result = 0;
+		private getHandle(coords: bo.helpers.Point): number {
+			let result = 0;
 
-			if (this.activeElement.canResize !== true) return result;
+			if (this.activeElement.canResize !== true) { return result; };
 
-			var leftEdge = coords.x > this.activeElement.x - 5 && coords.x < this.activeElement.x + 5;
-			var rightEdge = coords.x > this.activeElement.x + this.activeElement.width - 5 && coords.x < this.activeElement.x + this.activeElement.width + 5;
-			var topEdge = coords.y > this.activeElement.y - 5 && coords.y < this.activeElement.y + 5;
-			var bottomEdge = coords.y > this.activeElement.y + this.activeElement.height - 5 && coords.y < this.activeElement.y + this.activeElement.height + 5;
+			let leftEdge = coords.x > this.activeElement.x - 5 && coords.x < this.activeElement.x + 5;
+			let rightEdge = coords.x > this.activeElement.x + this.activeElement.width - 5 && coords.x < this.activeElement.x + this.activeElement.width + 5;
+			let topEdge = coords.y > this.activeElement.y - 5 && coords.y < this.activeElement.y + 5;
+			let bottomEdge = coords.y > this.activeElement.y + this.activeElement.height - 5 && coords.y < this.activeElement.y + this.activeElement.height + 5;
 
-			var verticalHit = coords.y > this.activeElement.y && coords.y < this.activeElement.y + this.activeElement.height;
-			var horizontalHit = coords.x > this.activeElement.x && coords.x < this.activeElement.x + this.activeElement.width;
+			let verticalHit = coords.y > this.activeElement.y && coords.y < this.activeElement.y + this.activeElement.height;
+			let horizontalHit = coords.x > this.activeElement.x && coords.x < this.activeElement.x + this.activeElement.width;
 
-			if (leftEdge && topEdge)
+			if (leftEdge && topEdge) {
 				result = 1;
-			else if (rightEdge && topEdge)
+			} else if (rightEdge && topEdge) {
 				result = 3;
-			else if (leftEdge && bottomEdge)
+			} else if (leftEdge && bottomEdge) {
 				result = 6;
-			else if (rightEdge && bottomEdge)
+			} else if (rightEdge && bottomEdge) {
 				result = 8;
-			else if (topEdge && horizontalHit)
+			} else if (topEdge && horizontalHit) {
 				result = 2;
-			else if (leftEdge && verticalHit)
+			} else if (leftEdge && verticalHit) {
 				result = 4;
-			else if (rightEdge && verticalHit)
+			} else if (rightEdge && verticalHit) {
 				result = 5;
-			else if (bottomEdge && horizontalHit)
+			} else if (bottomEdge && horizontalHit) {
 				result = 7;
+			}
 
 			return result;
 		}
 
-		private move(point: bo.helpers.point) {
+		private move(point: bo.helpers.Point) {
 			this.activeElement.x = point.x;
 			this.activeElement.y = point.y;
 		}
@@ -306,12 +330,12 @@ module bo {
 					break;
 			}
 
-			if (this.activeElement.width == 0) {
+			if (this.activeElement.width === 0) {
 				this.activeElement.width = (-1);
 				this.activeElement.x += 1;
 			}
 
-			if (this.activeElement.height == 0) {
+			if (this.activeElement.height === 0) {
 				this.activeElement.height = (-1);
 				this.activeElement.y += 1;
 			}
@@ -375,48 +399,8 @@ module bo {
 			}
 		}
 
-		private update(): void {
-			this.propertyInspector.update(this.activeElement);
-			this.labelInspector.update(this.activeElement);
-		}
-
-		updateCanvas(): void {
-			this.update();
-
-			this.drawingContext.fillStyle = "#FFFFFF";
-			this.drawingContext.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-			// Draw the boundary.
-			this.drawingContext.strokeStyle = "#FF0000";
-			this.drawingContext.lineWidth = 1;
-			this.drawingContext.strokeRect(this.labelX, this.labelY, this.labelWidth, this.labelHeight);
-			this.drawingContext.strokeStyle = "#000000";
-			this.drawingContext.fillStyle = "#000000";
-
-			for (var i = 0; i < this.currentLayer; i++) {
-				if (this.elements[i]) {
-					this.elements[i].draw(this.drawingContext, this.canvas.width, this.canvas.height);
-				}
-			}
-
-			this.drawingContext.strokeStyle = "#FF0000";
-			this.drawingContext.lineCap = 'butt';
-			this.drawingContext.lineWidth = 2;
-			if (this.activeElement)
-				this.activeElement.drawActive(this.drawingContext);
-		}
-
-		setNewObject(controller: toolFactory): void {
-			if (controller) {
-				this.newObjectController = controller;
-			}
-			else {
-				this.newObjectController = null;
-			}
-		}
-
 		private attachCanvasEvents(): void {
-			var self = this;
+			let self = this;
 			this.canvasElement.on("click", function () {
 				self.setActiveElement();
 			}).on("mousedown", function () {
@@ -428,16 +412,14 @@ module bo {
 					self.elements[self.currentLayer++] = self.newObjectController.object(self.dragStartPosition.x, self.dragStartPosition.y, 1, 1);
 					self.dragAction = 8;
 					self.activeElement = self.elements[self.currentLayer - 1];
-					self.newObjectController.button.removeClass("designerToolbarButtonActive");
 					self.newObjectController = null;
-				}
-				else {
+				} else {
 					self.dragAction = 0;
 
 					self.setActiveElement();
 
 					if (self.activeElement) {
-						self.dragElementOffset = new bo.helpers.point(self.activeElement.x - self.dragStartPosition.x, self.activeElement.y - self.dragStartPosition.y);
+						self.dragElementOffset = new bo.helpers.Point(self.activeElement.x - self.dragStartPosition.x, self.activeElement.y - self.dragStartPosition.y);
 						self.setActiveHandle(self.dragStartPosition);
 					}
 				}
@@ -451,11 +433,10 @@ module bo {
 				})
 				.on("mousemove", function () {
 					if (self.dragging && self.activeElement) {
-						var coords = self.canvas.relativeMouse(event);
-						//console.log(self.dragAction);
+						let coords = self.canvas.relativeMouse(event);
 						switch (self.dragAction) {
 							case 0:
-								self.move(new bo.helpers.point(coords.x + self.dragElementOffset.x, coords.y + self.dragElementOffset.y));
+								self.move(new bo.helpers.Point(coords.x + self.dragElementOffset.x, coords.y + self.dragElementOffset.y));
 								break;
 							default:
 								self.resize(coords.x - self.dragLastPosition.x, coords.y - self.dragLastPosition.y);
@@ -463,15 +444,13 @@ module bo {
 						}
 						self.updateCanvas();
 						self.dragLastPosition = coords;
-					}
-					else if (self.newObjectController != null) {
+					} else if (self.newObjectController != null) {
 						self.canvasElement.css({ cursor: "crosshair" });
-					}
-					else if (self.activeElement) {
-						var coords = self.canvas.relativeMouse(event);
+					} else if (self.activeElement) {
+						let coords = self.canvas.relativeMouse(event);
 						// If cursor is within range of edge, show resize handles
-						var location = self.getHandle(coords);
-						var style = "default";
+						let location = self.getHandle(coords);
+						let style = "default";
 						switch (location) {
 							case 0:
 								style = "default";
@@ -505,28 +484,30 @@ module bo {
 					}
 				})
 				.on("keydown", function (event) {
-					//event = event || window.event;
-
-					var handled = false;
+					let handled = false;
 					switch (event.keyCode) {
 						case 37: // Left arrow
-							if (self.activeElement)
+							if (self.activeElement) {
 								self.activeElement.x -= 1;
+							}
 							handled = true;
 							break;
 						case 38: // Up arrow
-							if (self.activeElement)
+							if (self.activeElement) {
 								self.activeElement.y -= 1;
+							}
 							handled = true;
 							break;
 						case 39: // Right arrow
-							if (self.activeElement)
+							if (self.activeElement) {
 								self.activeElement.x += 1;
+							}
 							handled = true;
 							break;
 						case 40: // Down arrow
-							if (self.activeElement)
+							if (self.activeElement) {
 								self.activeElement.y += 1;
+							}
 							handled = true;
 							break;
 						case 46:
