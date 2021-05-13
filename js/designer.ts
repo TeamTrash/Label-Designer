@@ -510,6 +510,12 @@ module bo {
 							}
 							handled = true;
 							break;
+						 case 8: // delete with backspace
+							    if (self.activeElement) {
+								self.deleteActiveElement();
+								handled = true;
+							    }
+							    break;
 						case 46:
 							if (self.activeElement) {
 								self.deleteActiveElement();
